@@ -3,9 +3,8 @@
  * Apermo Adminbar
  *
  * @package apermo-adminbar
- */
-
-/**
+ *
+ * @wordpress-plugin
  * Plugin Name: Apermo Admin Bar
  * Version: 0.9.1
  * Description: A simple plugin that allows you to add custom links to the admin bar, navigation between your live and dev systems
@@ -13,7 +12,8 @@
  * Author URI: http://apermo.de/
  * Text Domain: apermo-adminbar
  * Domain Path: /languages/
- * License: GPL v3
+ * License: GPL-2.0+
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  */
 
 /**
@@ -74,7 +74,7 @@ class ApermoAdminBar {
 	 */
 	public function __construct() {
 		$this->sites = get_option( 'apermo_adminbar_sites', array() );
-		add_action( 'plugins_loaded', array( $this, 'load_plugin_textdomain' ) );
+		$this->load_translation();
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
@@ -91,9 +91,8 @@ class ApermoAdminBar {
 	 *
 	 * Thanks to @kau-boy
 	 */
-	public function load_plugin_textdomain() {
-		$domain = 'apermo-adminbar';
-		load_plugin_textdomain( $domain, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+	public function load_translation() {
+		load_plugin_textdomain( 'apermo-adminbar', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
 
 	/**
@@ -254,14 +253,16 @@ class ApermoAdminBar {
 	 */
 	public function options_page() {
 		?>
-		<form action='options.php' method='post'>
-			<h1><?php esc_html_e( 'Apermo Admin Bar', 'apermo-adminbar' ); ?></h1>
-			<?php
-			settings_fields( 'apermo_adminbar' );
-			do_settings_sections( 'apermo_adminbar' );
-			submit_button();
-			?>
-		</form>
+		<div class="wrap">
+			<form action='options.php' method='post'>
+				<h1><?php esc_html_e( 'Apermo Admin Bar', 'apermo-adminbar' ); ?></h1>
+				<?php
+				settings_fields( 'apermo_adminbar' );
+				do_settings_sections( 'apermo_adminbar' );
+				submit_button();
+				?>
+			</form>
+		</div>
 		<?php
 	}
 
@@ -361,7 +362,7 @@ class ApermoAdminBar {
 		}
 		?>
 		<fieldset id="color-picker" class="scheme-list">
-			<legend class="screen-reader-text"><span><?php _e( 'Admin Color Scheme' ); ?></span></legend>
+			<legend class="screen-reader-text"><span><?php esc_html_e( 'Admin Color Scheme' ); ?></span></legend>
 			<?php
 			wp_nonce_field( 'save-color-scheme', 'color-nonce', false );
 			foreach ( $this->admin_colors as $color => $color_info ) :
@@ -431,4 +432,7 @@ class ApermoAdminBar {
 }
 
 // Run boy, run!
-new ApermoAdminBar();
+add_action( 'plugins_loaded', function () {
+	new ApermoAdminBar();
+} );
+
