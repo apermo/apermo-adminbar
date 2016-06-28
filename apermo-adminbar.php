@@ -7,11 +7,11 @@
 
 /**
  * Plugin Name: Apermo Admin Bar
- * Version: 0.9.0
+ * Version: 0.9.1
  * Description: A simple plugin that allows you to add custom links to the admin bar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
- * Text Domain: ap-ab
+ * Text Domain: apermo-adminbar
  * Domain Path: /languages/
  * License: GPL v3
  */
@@ -73,33 +73,26 @@ class ApermoAdminBar {
 	 * ApLiveDevAdminBar constructor.
 	 */
 	public function __construct() {
-		$this->sites = get_option( 'ap_ab_sites', array() );
+		$this->sites = get_option( 'apermo_adminbar_sites', array() );
+		add_action( 'plugins_loaded', array( $this, 'load_plugin_textdomain' ) );
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
 		add_action( 'admin_init', array( $this, 'sort_admin_colors' ), 99 );
 
-		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 		add_action( 'init', array( $this, 'init' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
-
-		$this->current = 'dev';
 	}
 
 	/**
 	 * Loading Textdomain
 	 *
-	 * Example taken from
-	 * http://geertdedeckere.be/article/loading-wordpress-language-files-the-right-way
+	 * Thanks to @kau-boy
 	 */
 	public function load_plugin_textdomain() {
-		$domain = 'ap-ab';
-
-		$locale = apply_filters( 'plugin_locale', get_locale(), $domain );
-
-		load_textdomain( $domain, WP_LANG_DIR . '/apermo-adminbar/' . $domain . '-' . $locale . '.mo' );
+		$domain = 'apermo-adminbar';
 		load_plugin_textdomain( $domain, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
 
@@ -114,18 +107,18 @@ class ApermoAdminBar {
 		 */
 		$types = array(
 			'dev' => array(
-				'label' => __( 'Development Site', 'ap-ab' ),
-				'description' => __( 'Your development site, probably a local version on the development machine', 'ap-ab' ),
+				'label' => __( 'Development Site', 'apermo-adminbar' ),
+				'description' => __( 'Your development site, probably a local version on the development machine', 'apermo-adminbar' ),
 				'default' => 'sunrise',
 			),
 			'staging' => array(
-				'label' => __( 'Staging Site', 'ap-ab' ),
-				'description' => __( 'Your staging site, for testing and other purposes', 'ap-ab' ),
+				'label' => __( 'Staging Site', 'apermo-adminbar' ),
+				'description' => __( 'Your staging site, for testing and other purposes', 'apermo-adminbar' ),
 				'default' => 'blue',
 			),
 			'live' => array(
-				'label' => __( 'Live Site', 'ap-ab' ),
-				'description' => __( 'Your production site', 'ap-ab' ),
+				'label' => __( 'Live Site', 'apermo-adminbar' ),
+				'description' => __( 'Your production site', 'apermo-adminbar' ),
 				'default' => 'fresh',
 			),
 		);
@@ -133,9 +126,27 @@ class ApermoAdminBar {
 		remove_action( 'admin_color_scheme_picker', 'admin_color_scheme_picker' );
 
 		// Allow to add (or remove) further page types via filter.
-		$this->allowed_page_types = apply_filters( 'ap-ab-types', $types );
+		$this->allowed_page_types = apply_filters( 'apermo-adminbar-types', $types );
 		if ( count( $this->sites ) ) {
 			add_action( 'admin_bar_menu', array( $this, 'admin_bar_filter' ), 99 );
+
+			$this->set_current();
+		}
+	}
+
+	/**
+	 * Set $this->current for later use
+	 *
+	 * @return void
+	 */
+	private function set_current() {
+		foreach ( $this->sites as $key => $site ) {
+			// Just give me the domain + everything that follows.
+			$url = trim( substr( $site['url'], strpos( $site['url'], '://' ) + 3 ), '/' );
+			if ( $url && false !== strpos( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], $url ) ) {
+				$this->current = $key;
+				return;
+			}
 		}
 	}
 
@@ -158,7 +169,7 @@ class ApermoAdminBar {
 			$this->admin_colors = array_filter( array_merge( array( 'fresh' => '', 'light' => '' ), $this->admin_colors ) );
 		}
 
-		$this->admin_colors = apply_filters( 'ap-ab-colors', $this->admin_colors );
+		$this->admin_colors = apply_filters( 'apermo-adminbar-colors', $this->admin_colors );
 	}
 
 	/**
@@ -167,8 +178,8 @@ class ApermoAdminBar {
 	public function color_scheme() {
 		$scheme = $this->sites[ $this->current ]['scheme_url'];
 		if ( current_user_can( 'edit_posts' ) && ( is_admin() || is_admin_bar_showing() ) ) {
-			wp_enqueue_style( 'ap-ab-colors', $scheme, array() );
-			wp_enqueue_style( 'ap-ab', plugins_url( 'css/style.css', __FILE__ ) );
+			wp_enqueue_style( 'apermo-adminbar-colors', $scheme, array() );
+			wp_enqueue_style( 'apermo-adminbar', plugins_url( 'css/style.css', __FILE__ ) );
 		}
 	}
 
@@ -207,24 +218,27 @@ class ApermoAdminBar {
 		self::add_spacer( $wp_admin_bar );
 
 		foreach ( $this->sites as $key => $site ) {
-			// Makes no sense to add links to the site we are currently on.
-			if ( $key !== $this->current ) {
-				// Add the node to home of the other site.
-				$wp_admin_bar->add_node( array(
-					'id'		=> esc_attr( 'ap_ab_menu_' . $key ),
-					'title'		=> esc_html( $site['name'] ),
-					'parent'	=> 'site-name',
-					'href'		=> esc_url( $site['url'] ),
-				) );
-				// Check if we are on a different page than the homepage.
-				// Todo: Will probably break if WordPress installed in a subdirectory.
-				if ( strlen( $_SERVER['REQUEST_URI'] ) > 1 ) {
+			// Check if there is a URL.
+			if ( isset( $site['url'] ) && $site['url'] ) {
+				// Makes no sense to add links to the site we are currently on.
+				if ( $key !== $this->current ) {
+					// Add the node to home of the other site.
 					$wp_admin_bar->add_node( array(
-						'id'		=> esc_attr( 'ap_ab_menu_' . $key . '-same' ),
-						'title'		=> esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'ap-ab' ),
+						'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key ),
+						'title'		=> esc_html( $site['name'] ),
 						'parent'	=> 'site-name',
-						'href'		=> esc_url( $site['url'] . $_SERVER['REQUEST_URI'] ),
+						'href'		=> esc_url( $site['url'] ),
 					) );
+					// Check if we are on a different page than the homepage.
+					// Todo: Will probably break if WordPress installed in a subdirectory.
+					if ( strlen( $_SERVER['REQUEST_URI'] ) > 1 ) {
+						$wp_admin_bar->add_node( array(
+							'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key . '-same' ),
+							'title'		=> esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'apermo-adminbar' ),
+							'parent'	=> 'site-name',
+							'href'		=> esc_url( $site['url'] . $_SERVER['REQUEST_URI'] ),
+						) );
+					}
 				}
 			}
 		}
@@ -241,10 +255,10 @@ class ApermoAdminBar {
 	public function options_page() {
 		?>
 		<form action='options.php' method='post'>
-			<h1><?php esc_html_e( 'Apermo Admin Bar', 'ap_ab' ); ?></h1>
+			<h1><?php esc_html_e( 'Apermo Admin Bar', 'apermo-adminbar' ); ?></h1>
 			<?php
-			settings_fields( 'apermo_admin_bar' );
-			do_settings_sections( 'apermo_admin_bar' );
+			settings_fields( 'apermo_adminbar' );
+			do_settings_sections( 'apermo_adminbar' );
 			submit_button();
 			?>
 		</form>
@@ -257,49 +271,49 @@ class ApermoAdminBar {
 	 * @return void
 	 */
 	public function add_admin_menu() {
-		add_options_page( __( 'Apermo Admin Bar', 'ap-ab' ), __( 'Apermo Admin Bar', 'ap-ab' ), 'manage_options', 'apermo_admin_bar', array( $this, 'options_page' ) );
+		add_options_page( __( 'Apermo Admin Bar', 'apermo-adminbar' ), __( 'Apermo Admin Bar', 'apermo-adminbar' ), 'manage_options', 'apermo_adminbar', array( $this, 'options_page' ) );
 	}
 
 	/**
 	 * Adds the Settings
 	 */
 	public function settings_init() {
-		register_setting( 'apermo_admin_bar', 'ap_ab_sites', array( $this, 'sanitize' ) );
+		register_setting( 'apermo_adminbar', 'apermo_adminbar_sites', array( $this, 'sanitize' ) );
 
 		foreach ( $this->allowed_page_types as $key => $data ) {
 			add_settings_section(
-				'ap_ab_sites_section_' . $key,
+				'apermo_adminbar_sites_section_' . $key,
 				$data['label'],
 				function( $data ) {
 					echo esc_html( $data['description'] );
 				},
-				'apermo_admin_bar'
+				'apermo_adminbar'
 			);
 
 			add_settings_field(
-				'ap_ab_sites_' . $key . '_name',
-				__( 'Name', 'ap-ab' ),
+				'apermo_adminbar_sites_' . $key . '_name',
+				__( 'Name', 'apermo-adminbar' ),
 				array( $this, 'name_render' ),
-				'apermo_admin_bar',
-				'ap_ab_sites_section_' . $key,
+				'apermo_adminbar',
+				'apermo_adminbar_sites_section_' . $key,
 				array( 'key' => $key, 'data' => $data )
 			);
 
 			add_settings_field(
-				'ap_ab_sites_' . $key . '_url',
-				__( 'URL', 'ap-ab' ),
+				'apermo_adminbar_sites_' . $key . '_url',
+				__( 'URL', 'apermo-adminbar' ),
 				array( $this, 'url_render' ),
-				'apermo_admin_bar',
-				'ap_ab_sites_section_' . $key,
+				'apermo_adminbar',
+				'apermo_adminbar_sites_section_' . $key,
 				array( 'key' => $key, 'data' => $data )
 			);
 
 			add_settings_field(
-				'ap_ab_sites_' . $key . '_color',
-				__( 'Color Scheme', 'ap-ab' ),
+				'apermo_adminbar_sites_' . $key . '_color',
+				__( 'Color Scheme', 'apermo-adminbar' ),
 				array( $this, 'color_render' ),
-				'apermo_admin_bar',
-				'ap_ab_sites_section_' . $key,
+				'apermo_adminbar',
+				'apermo_adminbar_sites_section_' . $key,
 				array( 'key' => $key, 'data' => $data )
 			);
 		}
@@ -309,7 +323,7 @@ class ApermoAdminBar {
 	 * Adds a description to the section
 	 */
 	public function sites_callback() {
-		esc_html_e( 'This section description', 'ap-ab' );
+		esc_html_e( 'This section description', 'apermo-adminbar' );
 	}
 
 	/**
@@ -319,7 +333,7 @@ class ApermoAdminBar {
 	 */
 	public function name_render( $args ) {
 		$setting = $this->sites[ $args['key'] ]['name'];
-		echo '<input type="text" id="ap_ab_sites_' . esc_attr( $args['key'] ) . '_name" name="ap_ab_sites[' . $args['key'] . '][name]" placeholder="' . esc_attr( $args['data']['label'] ) . '" value="' . esc_attr( $setting ) . '" class="regular-text">';
+		echo '<input type="text" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_name" name="apermo_adminbar_sites[' . $args['key'] . '][name]" placeholder="' . esc_attr( $args['data']['label'] ) . '" value="' . esc_attr( $setting ) . '" class="regular-text">';
 	}
 
 	/**
@@ -329,7 +343,7 @@ class ApermoAdminBar {
 	 */
 	public function url_render( $args ) {
 		$setting = $this->sites[ $args['key'] ]['url'];
-		echo '<input type="url" id="ap_ab_sites_' . esc_attr( $args['key'] ) . '_url" name="ap_ab_sites[' . $args['key'] . '][url]" placeholder="http://..." value="' . esc_attr( $setting ) . '" class="regular-text">';
+		echo '<input type="url" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_url" name="apermo_adminbar_sites[' . $args['key'] . '][url]" placeholder="http://..." value="' . esc_attr( $setting ) . '" class="regular-text">';
 	}
 
 	/**
@@ -354,7 +368,7 @@ class ApermoAdminBar {
 
 				?>
 				<div class="color-option <?php echo ( $color === $current_color ) ? 'selected' : ''; ?>">
-					<label><input name="ap_ab_sites[<?php echo $key; ?>][color]" type="radio" value="<?php echo esc_attr( $color ); ?>" class="tog" <?php checked( $color, $current_color ); ?> />
+					<label><input name="apermo_adminbar_sites[<?php echo $key; ?>][color]" type="radio" value="<?php echo esc_attr( $color ); ?>" class="tog" <?php checked( $color, $current_color ); ?> />
 						<?php echo esc_html( $color_info->name ); ?>
 					</label>
 					<table class="color-palette">
@@ -403,7 +417,7 @@ class ApermoAdminBar {
 					$data['color'] = $this->allowed_page_types[ $key ]['default'];
 				}
 
-				$data['url'] = esc_url_raw( $data['url'] );
+				$data['url'] = trim( esc_url_raw( $data['url'] ), '/' );
 
 				// Store the URL, so that we dont' need to init $_wp_admin_css_colors.
 				$data['scheme_url'] = $this->admin_colors[ $data['color'] ]->url;

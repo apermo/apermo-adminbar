@@ -37,5 +37,8 @@ Feel free to add more, there are other plugins that do so. Or have a look at [wp
 
 == Changelog ==
 
+= 0.9.1 =
+- Bug fixes and optimizations - Thanks to @kau-boy for the help
+
 = 0.9.0 =
 - Initial Release
