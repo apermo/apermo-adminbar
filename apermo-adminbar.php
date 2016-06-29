@@ -1,13 +1,13 @@
 <?php
 /**
- * Apermo Adminbar
+ * Apermo AdminBar
  *
  * @package apermo-adminbar
  *
  * @wordpress-plugin
- * Plugin Name: Apermo Admin Bar
+ * Plugin Name: Apermo AdminBar
  * Version: 0.9.3
- * Description: A simple plugin that allows you to add custom links to the admin bar, navigation between your live and dev systems
+ * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
  * Text Domain: apermo-adminbar
@@ -17,7 +17,7 @@
  */
 
 /**
- * Apermo Admin Bar
+ * Apermo AdminBar
  * Copyright (C) 2016, Christoph Daum - info@apermo.de
  *
  * This program is free software: you can redistribute it and/or modify
@@ -204,7 +204,7 @@ class ApermoAdminBar {
 	}
 
 	/**
-	 * Load the Admin Bar Color Scheme
+	 * Load the AdminBar Color Scheme
 	 */
 	public function color_scheme() {
 		$scheme = $this->admin_colors[ $this->sites[ $this->current ]['color'] ]->url;
@@ -219,7 +219,7 @@ class ApermoAdminBar {
 	 *
 	 * Static on purpose, so that developers can add spacers to the admin-bar themselves without needing to copy the code
 	 *
-	 * @param WP_Admin_Bar $wp_admin_bar The WP Admin Bar.
+	 * @param WP_Admin_Bar $wp_admin_bar The WP AdminBar.
 	 */
 	public static function add_spacer( $wp_admin_bar ) {
 		$wp_admin_bar->add_node( array(
@@ -235,9 +235,9 @@ class ApermoAdminBar {
 	}
 
 	/**
-	 * Filters the Admin Bar to add the links between the different pages
+	 * Filters the AdminBar to add the links between the different pages
 	 *
-	 * @param WP_Admin_Bar $wp_admin_bar The WP Admin Bar.
+	 * @param WP_Admin_Bar $wp_admin_bar The WP AdminBar.
 	 *
 	 * @return void
 	 */
@@ -287,7 +287,7 @@ class ApermoAdminBar {
 		?>
 		<div class="wrap">
 			<form action='options.php' method='post'>
-				<h1><?php esc_html_e( 'Apermo Admin Bar', 'apermo-adminbar' ); ?></h1>
+				<h1><?php esc_html_e( 'Apermo AdminBar', 'apermo-adminbar' ); ?></h1>
 				<?php
 				if ( $this->is_from_filter ) {
 				?>
@@ -313,7 +313,7 @@ class ApermoAdminBar {
 	 * @return void
 	 */
 	public function add_admin_menu() {
-		add_options_page( __( 'Apermo Admin Bar', 'apermo-adminbar' ), __( 'Apermo Admin Bar', 'apermo-adminbar' ), 'manage_options', 'apermo_adminbar', array( $this, 'options_page' ) );
+		add_options_page( __( 'Apermo AdminBar', 'apermo-adminbar' ), __( 'Apermo AdminBar', 'apermo-adminbar' ), 'manage_options', 'apermo_adminbar', array( $this, 'options_page' ) );
 	}
 
 	/**
