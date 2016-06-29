@@ -6,7 +6,7 @@
  *
  * @wordpress-plugin
  * Plugin Name: Apermo Admin Bar
- * Version: 0.9.1
+ * Version: 0.9.3
  * Description: A simple plugin that allows you to add custom links to the admin bar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
@@ -70,17 +70,23 @@ class ApermoAdminBar {
 	private $admin_colors = array();
 
 	/**
+	 * Indicator if the sites were loaded from a filter.
+	 *
+	 * @var bool
+	 */
+	private $is_from_filter = false;
+
+	/**
 	 * ApLiveDevAdminBar constructor.
 	 */
 	public function __construct() {
-		$this->sites = get_option( 'apermo_adminbar_sites', array() );
 		$this->load_translation();
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
-		add_action( 'admin_init', array( $this, 'sort_admin_colors' ), 99 );
 
 		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'sort_admin_colors' ), 99 );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
@@ -126,10 +132,34 @@ class ApermoAdminBar {
 
 		// Allow to add (or remove) further page types via filter.
 		$this->allowed_page_types = apply_filters( 'apermo-adminbar-types', $types );
+		$this->load_sites();
 		if ( count( $this->sites ) ) {
 			add_action( 'admin_bar_menu', array( $this, 'admin_bar_filter' ), 99 );
 
 			$this->set_current();
+		}
+	}
+
+	/**
+	 * Load Settings from Database
+	 */
+	private function load_sites() {
+		// Check if a filter was added from within the theme.
+		if ( has_filter( 'apermo-adminbar-sites' ) ) {
+			$dummysites = array();
+			foreach ( $this->allowed_page_types as $key => $allowed_page_type ) {
+				$dummysites[ $key ]['name'] = $allowed_page_type['label'];
+				$dummysites[ $key ]['color'] = $allowed_page_type['default'];
+				$dummysites[ $key ]['url'] = '';
+			}
+			// Filter against a default set of sites and afterwards use the sanitize function.
+			$this->is_from_filter = true;
+			$this->sites = $this->sanitize( apply_filters( 'apermo-adminbar-sites', $dummysites ) );
+		}
+		// If the sites are still empty load the settings from the DB.
+		if ( ! count( $this->sites ) ) {
+			$this->is_from_filter = false;
+			$this->sites = get_option( 'apermo_adminbar_sites', array() );
 		}
 	}
 
@@ -159,6 +189,8 @@ class ApermoAdminBar {
 	public function sort_admin_colors() {
 		global $_wp_admin_css_colors;
 
+		register_admin_color_schemes();
+
 		$this->admin_colors = $_wp_admin_css_colors;
 
 		ksort( $this->admin_colors );
@@ -175,7 +207,7 @@ class ApermoAdminBar {
 	 * Load the Admin Bar Color Scheme
 	 */
 	public function color_scheme() {
-		$scheme = $this->sites[ $this->current ]['scheme_url'];
+		$scheme = $this->admin_colors[ $this->sites[ $this->current ]['color'] ]->url;
 		if ( current_user_can( 'edit_posts' ) && ( is_admin() || is_admin_bar_showing() ) ) {
 			wp_enqueue_style( 'apermo-adminbar-colors', $scheme, array() );
 			wp_enqueue_style( 'apermo-adminbar', plugins_url( 'css/style.css', __FILE__ ) );
@@ -257,12 +289,21 @@ class ApermoAdminBar {
 			<form action='options.php' method='post'>
 				<h1><?php esc_html_e( 'Apermo Admin Bar', 'apermo-adminbar' ); ?></h1>
 				<?php
+				if ( $this->is_from_filter ) {
+				?>
+					<div id="setting-error-settings_updated" class="error settings-error notice">
+						<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings will have no further effect.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
+					</div>
+				<?php
+				}
 				settings_fields( 'apermo_adminbar' );
 				do_settings_sections( 'apermo_adminbar' );
 				submit_button();
 				?>
 			</form>
+			<p class="clear"><strong>*) <?php esc_html_e( 'Sites without URL will not be saved to the database, name and color scheme will be dropped.', 'apermo-adminbar' ); ?></strong></p>
 		</div>
+		<div class="clear"></div>
 		<?php
 	}
 
@@ -344,7 +385,7 @@ class ApermoAdminBar {
 	 */
 	public function url_render( $args ) {
 		$setting = $this->sites[ $args['key'] ]['url'];
-		echo '<input type="url" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_url" name="apermo_adminbar_sites[' . $args['key'] . '][url]" placeholder="http://..." value="' . esc_attr( $setting ) . '" class="regular-text">';
+		echo '<input type="url" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_url" name="apermo_adminbar_sites[' . $args['key'] . '][url]" placeholder="http://..." value="' . esc_attr( $setting ) . '" class="regular-text">*';
 	}
 
 	/**
@@ -420,10 +461,10 @@ class ApermoAdminBar {
 
 				$data['url'] = trim( esc_url_raw( $data['url'] ), '/' );
 
-				// Store the URL, so that we dont' need to init $_wp_admin_css_colors.
-				$data['scheme_url'] = $this->admin_colors[ $data['color'] ]->url;
-
-				$output[ $key ] = $data;
+				// It only makes sense to save, if there is a URL, otherwise just drop it.
+				if ( $data['url'] ) {
+					$output[ $key ] = $data;
+				}
 			}
 		}
 
@@ -435,4 +476,3 @@ class ApermoAdminBar {
 add_action( 'plugins_loaded', function () {
 	new ApermoAdminBar();
 } );
-

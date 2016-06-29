@@ -32,7 +32,25 @@ You can do so with `add_filter( 'ap-ab-type', 'your_filter' );`
 ### I want more color schemes! ###
 Feel free to add more, there are other plugins that do so. Or have a look at [wp_admin_css_color() in the WordPress Codex](https://codex.wordpress.org/Function_Reference/wp_admin_css_color)
 
+### Can I save the color schemes to my theme? ###
+Yes, you can. Simply add and alter the following example somewhere to the functions.php of your theme
+
+```
+add_filter( 'apermo-adminbar-sites', 'sites_filter' );
+
+function sites_filter( $sites ) {
+    $sites['dev']['url'] = 'http://dev.your-site.tld';
+    $sites['staging']['url'] = 'http://staging.your-site.tld';
+    $sites['live']['url'] = 'https://www.your-site.tld';
+    return $sites;
+}
+```
+
 ## Changelog ##
+
+### 0.9.3 ###
+* Removed Scheme URL from saved options
+* added filter 'apermo-adminbar-sites' to give the option of saving the settings in a theme
 
 ### 0.9.2 ###
 * Some minor code improvements
