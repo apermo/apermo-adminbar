@@ -6,7 +6,7 @@
  *
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
- * Version: 0.9.3
+ * Version: 0.9.4
  * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
@@ -132,6 +132,8 @@ class ApermoAdminBar {
 
 		// Allow to add (or remove) further page types via filter.
 		$this->allowed_page_types = apply_filters( 'apermo-adminbar-types', $types );
+		// 'all' is reserved, it is used for the serialized data, and it would possibly create side effects.
+		unset( $this->allowed_page_types['all'] );
 		$this->load_sites();
 		if ( count( $this->sites ) ) {
 			add_action( 'admin_bar_menu', array( $this, 'admin_bar_filter' ), 99 );
@@ -327,7 +329,7 @@ class ApermoAdminBar {
 				'apermo_adminbar_sites_section_' . $key,
 				$data['label'],
 				function( $data ) {
-					echo esc_html( $data['description'] );
+					return esc_html( $data['description'] );
 				},
 				'apermo_adminbar'
 			);
@@ -359,6 +361,28 @@ class ApermoAdminBar {
 				array( 'key' => $key, 'data' => $data )
 			);
 		}
+
+		add_settings_section(
+			'apermo_adminbar_sites_section_serialized',
+			__( 'Export/Import', 'apermo-adminbar' ),
+			function(){},
+			'apermo_adminbar'
+		);
+		add_settings_field(
+			'apermo_adminbar_sites_import',
+			__( 'Import', 'apermo-adminbar' ),
+			array( $this, 'import_render' ),
+			'apermo_adminbar',
+			'apermo_adminbar_sites_section_serialized'
+		);
+
+		add_settings_field(
+			'apermo_adminbar_sites_export',
+			__( 'Export', 'apermo-adminbar' ),
+			array( $this, 'export_render' ),
+			'apermo_adminbar',
+			'apermo_adminbar_sites_section_serialized'
+		);
 	}
 
 	/**
@@ -436,6 +460,30 @@ class ApermoAdminBar {
 		<?php
 	}
 
+	/**
+	 * Show the input for the serialized data, and the data themselves.
+	 */
+	public function import_render() {
+		?>
+		<label for="apermo_adminbar_sites_import"><?php esc_html_e( 'If you want import the setting from another site, just copy the code from the export section into this textarea. For advanced users, you can use the filter "apermo-adminbar-sites", see the readme for an example.', 'apermo-adminbar' ); ?></label>
+		<p><strong style="color: #c00"><?php esc_html_e( 'Notice:', 'apermo-adminbar' ); ?></strong> <?php esc_html_e( 'If you enter a valid import in here, it will overwrite all settings above.', 'apermo-adminbar' ); ?></p>
+		<textarea name="apermo_adminbar_sites[all]" rows="10" cols="50" id="apermo_adminbar_sites_import" class="large-text code"></textarea>
+		<?php
+	}
+
+	/**
+	 * Show the input for the serialized data, and the data themselves.
+	 */
+	public function export_render() {
+		?>
+		<?php if ( count( $this->sites ) ) { ?>
+		<p><?php esc_html_e( 'Copy this this text into the import textarea of another site.', 'apermo-adminbar' ); ?></p>
+		<pre style="max-width: 400px; white-space: pre-wrap;"><?php echo serialize( $this->sites ); ?></pre>
+		<?php } else { ?>
+		<p><?php esc_html_e( 'Nothing to export', 'apermo-adminbar' ); ?></p>
+		<?php }
+	}
+
 
 	/**
 	 * Sanitizes the input
@@ -446,6 +494,19 @@ class ApermoAdminBar {
 	 */
 	public function sanitize( $input ) {
 		$output = array();
+
+		if ( $input['all'] ) {
+			$all = unserialize( trim( $input['all'] ) );
+			if ( is_array( $all ) ) {
+				$output = $this->sanitize( $all );
+
+				if ( is_array( $output ) && count( $output ) ) {
+					return $output;
+				}
+			}
+
+			unset( $input['all'] );
+		}
 
 		// Check all incoming pages.
 		foreach ( $input as $key => $data ) {

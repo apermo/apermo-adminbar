@@ -3,7 +3,7 @@
 * Tags: admin bar, admin, development, staging
 * Requires at least: 4.0
 * Tested up to: 4.5.3
-* Stable tag: 0.9.0
+* Stable tag: 0.9.4
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,10 @@ function sites_filter( $sites ) {
 ```
 
 ## Changelog ##
+
+### 0.9.4 ###
+* added an export and import option
+* minor improvements
 
 ### 0.9.3 ###
 * Removed Scheme URL from saved options
