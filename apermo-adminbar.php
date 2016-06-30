@@ -6,7 +6,7 @@
  *
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
- * Version: 0.9.4
+ * Version: 0.9.5
  * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
@@ -263,13 +263,12 @@ class ApermoAdminBar {
 						'href'		=> esc_url( $site['url'] ),
 					) );
 					// Check if we are on a different page than the homepage.
-					// Todo: Will probably break if WordPress installed in a subdirectory.
-					if ( strlen( $_SERVER['REQUEST_URI'] ) > 1 ) {
+					if ( strlen( $this->get_request() ) > 1 ) {
 						$wp_admin_bar->add_node( array(
 							'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key . '-same' ),
 							'title'		=> esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'apermo-adminbar' ),
 							'parent'	=> 'site-name',
-							'href'		=> esc_url( $site['url'] . $_SERVER['REQUEST_URI'] ),
+							'href'		=> esc_url( $site['url'] . $this->get_request() ),
 						) );
 					}
 				}
@@ -278,6 +277,18 @@ class ApermoAdminBar {
 		if ( ! is_admin() ) {
 			self::add_spacer( $wp_admin_bar );
 		}
+	}
+
+	/**
+	 * Get the Request Part that is not Subfolder for the WordPress installation.
+	 */
+	public function get_request() {
+		$request = esc_url_raw( $_SERVER['REQUEST_URI'] );
+		$url = parse_url( $this->sites[ $this->current ]['url'] );
+		if ( isset( $url['path'] ) && 0 === strpos( $request, $url['path'] ) ) {
+			return substr( $request, strlen( $url['path'] ) );
+		}
+		return $request;
 	}
 
 	/**
