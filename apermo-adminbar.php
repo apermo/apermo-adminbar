@@ -77,10 +77,23 @@ class ApermoAdminBar {
 	private $is_from_filter = false;
 
 	/**
+	 * Indicator if DomainMapping from WordPress MU Domain Mapping for Mulitsite is active
+	 *
+	 * @var bool
+	 */
+	private $domain_mapping = false;
+
+	/**
 	 * ApLiveDevAdminBar constructor.
 	 */
 	public function __construct() {
+		global $wpdb;
 		$this->load_translation();
+
+		//Check if domain_mapping is active.
+		if ( $wpdb->dmtable === $wpdb->base_prefix . 'domain_mapping' ) {
+			$this->domain_mapping = true;
+		}
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
@@ -153,6 +166,10 @@ class ApermoAdminBar {
 				$dummysites[ $key ]['name'] = $allowed_page_type['label'];
 				$dummysites[ $key ]['color'] = $allowed_page_type['default'];
 				$dummysites[ $key ]['url'] = '';
+
+				if ( $this->domain_mapping ) {
+					$dummysites[ $key ]['mapping_url'] = '';
+				}
 			}
 			// Filter against a default set of sites and afterwards use the sanitize function.
 			$this->is_from_filter = true;
@@ -173,10 +190,17 @@ class ApermoAdminBar {
 	private function set_current() {
 		foreach ( $this->sites as $key => $site ) {
 			// Just give me the domain + everything that follows.
-			$url = trim( substr( $site['url'], strpos( $site['url'], '://' ) + 3 ), '/' );
-			if ( $url && false !== strpos( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], $url ) ) {
-				$this->current = $key;
-				return;
+			$urls[] = $this->no_http_s( $site['url'] );
+
+			//Multisite Domain Mapping Support.
+			if ( isset( $site['mapping_url'] ) ) {
+				$urls[] = $this->no_http_s( $site['mapping_url'] );
+			}
+			foreach ( $urls as $url ) {
+				if ( $url && false !== strpos( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], $url ) ) {
+					$this->current = $key;
+					return;
+				}
 			}
 		}
 	}
@@ -256,11 +280,15 @@ class ApermoAdminBar {
 				// Makes no sense to add links to the site we are currently on.
 				if ( $key !== $this->current ) {
 					// Add the node to home of the other site.
+					$base_url = $site['url'];
+					if ( $this->domain_mapping && isset( $site['mapping_url'] ) && $site['mapping_url'] ) {
+						$base_url = $site['mapping_url'];
+					}
 					$wp_admin_bar->add_node( array(
 						'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key ),
 						'title'		=> esc_html( $site['name'] ),
 						'parent'	=> 'site-name',
-						'href'		=> esc_url( $site['url'] ),
+						'href'		=> esc_url( $base_url ),
 					) );
 					// Check if we are on a different page than the homepage.
 					if ( strlen( $this->get_request() ) > 1 ) {
@@ -268,7 +296,7 @@ class ApermoAdminBar {
 							'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key . '-same' ),
 							'title'		=> esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'apermo-adminbar' ),
 							'parent'	=> 'site-name',
-							'href'		=> esc_url( $site['url'] . $this->get_request() ),
+							'href'		=> esc_url( $base_url . $this->get_request() ),
 						) );
 					}
 				}
@@ -283,12 +311,28 @@ class ApermoAdminBar {
 	 * Get the Request Part that is not Subfolder for the WordPress installation.
 	 */
 	public function get_request() {
-		$request = esc_url_raw( $_SERVER['REQUEST_URI'] );
-		$url = parse_url( $this->sites[ $this->current ]['url'] );
-		if ( isset( $url['path'] ) && 0 === strpos( $request, $url['path'] ) ) {
-			return substr( $request, strlen( $url['path'] ) );
+		$request = $this->no_http_s( esc_url_raw( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ) );
+		$url_types = array( 'url', 'mapping_url');
+
+		foreach ( $url_types as $url_type ) {
+			$url = $this->no_http_s( $this->sites[ $this->current ][ $url_type ] );
+			if ( 0 === strpos( $request, $url ) ) {
+				return substr( $request, strlen( $url ) );
+			}
 		}
-		return $request;
+
+		if ( is_multisite() ) {
+			$base_url = get_site_url( get_current_blog_id() );
+		} else {
+			$base_url = get_site_url();
+		}
+		$base_url = $this->no_http_s( $base_url );
+
+		if ( 0 === strpos( $request, $base_url ) ) {
+			return substr( $request, strlen( $base_url ) );
+		}
+
+		return esc_url_raw( $_SERVER['REQUEST_URI'] );
 	}
 
 	/**
@@ -363,6 +407,17 @@ class ApermoAdminBar {
 				array( 'key' => $key, 'data' => $data )
 			);
 
+			if ( $this->domain_mapping ) {
+				add_settings_field(
+					'apermo_adminbar_sites_' . $key . '_mapping_url',
+					__( 'Mapping URL (Multisite)', 'apermo-adminbar' ),
+					array( $this, 'mapping_url_render' ),
+					'apermo_adminbar',
+					'apermo_adminbar_sites_section_' . $key,
+					array( 'key' => $key, 'data' => $data )
+				);
+			}
+
 			add_settings_field(
 				'apermo_adminbar_sites_' . $key . '_color',
 				__( 'Color Scheme', 'apermo-adminbar' ),
@@ -421,6 +476,16 @@ class ApermoAdminBar {
 	public function url_render( $args ) {
 		$setting = $this->sites[ $args['key'] ]['url'];
 		echo '<input type="url" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_url" name="apermo_adminbar_sites[' . $args['key'] . '][url]" placeholder="http://..." value="' . esc_attr( $setting ) . '" class="regular-text">*';
+	}
+
+	/**
+	 * Input for URL
+	 *
+	 * @param array $args Arguments, especially the key for the input field.
+	 */
+	public function mapping_url_render( $args ) {
+		$setting = $this->sites[ $args['key'] ]['mapping_url'];
+		echo '<input type="url" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_mapping_url" name="apermo_adminbar_sites[' . $args['key'] . '][mapping_url]" placeholder="http://..." value="' . esc_attr( $setting ) . '" class="regular-text">';
 	}
 
 	/**
@@ -533,6 +598,9 @@ class ApermoAdminBar {
 
 				$data['url'] = trim( esc_url_raw( $data['url'] ), '/' );
 
+				//Multisite support, only the input field is conditional, so that this could still be set with a filter
+				$data['mapping_url'] = trim( esc_url_raw( $data['mapping_url'] ), '/' );
+
 				// It only makes sense to save, if there is a URL, otherwise just drop it.
 				if ( $data['url'] ) {
 					$output[ $key ] = $data;
@@ -541,6 +609,17 @@ class ApermoAdminBar {
 		}
 
 		return $output;
+	}
+
+	/**
+	 * Removes the https?:// from the beginning of a URL
+	 *
+	 * @param string $url
+	 *
+	 * @return string
+	 */
+	public function no_http_s( $url ) {
+		return trim( substr( $url, strpos( $url, '://' ) + 3 ), '/' );
 	}
 }
 
