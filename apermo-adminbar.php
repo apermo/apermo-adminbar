@@ -6,6 +6,7 @@
  *
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
+ * Plugin URI: https://wordpress.org/plugins/apermo-adminbar/
  * Version: 0.9.5
  * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
  * Author: Christoph Daum
