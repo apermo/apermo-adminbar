@@ -7,7 +7,7 @@
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
  * Plugin URI: https://wordpress.org/plugins/apermo-adminbar/
- * Version: 0.9.5
+ * Version: 0.9.9
  * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
@@ -104,6 +104,10 @@ class ApermoAdminBar {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'options_reading' ) );
+
+		add_filter( 'pre_option_blog_public', array( $this, 'blog_public' ), 99, 2 );
 	}
 
 	/**
@@ -122,23 +126,26 @@ class ApermoAdminBar {
 		/**
 		 * Entry format
 		 *
-		 * 'key_for_form' => array( 'label' => 'Readable Label', 'descroption' => 'Short description' )
+		 * 'key_for_form' => array( 'label' => 'Readable Label', 'descroption' => 'Short description', 'robots' => 'yes'|'no'|false )
 		 */
 		$types = array(
 			'dev' => array(
 				'label' => __( 'Development Site', 'apermo-adminbar' ),
 				'description' => __( 'Your development site, probably a local version on the development machine', 'apermo-adminbar' ),
 				'default' => 'sunrise',
+				'robots' => 'yes',
 			),
 			'staging' => array(
 				'label' => __( 'Staging Site', 'apermo-adminbar' ),
 				'description' => __( 'Your staging site, for testing and other purposes', 'apermo-adminbar' ),
 				'default' => 'blue',
+				'robots' => 'yes',
 			),
 			'live' => array(
 				'label' => __( 'Live Site', 'apermo-adminbar' ),
 				'description' => __( 'Your production site', 'apermo-adminbar' ),
 				'default' => 'fresh',
+				'robots' => false,
 			),
 		);
 
@@ -157,6 +164,31 @@ class ApermoAdminBar {
 	}
 
 	/**
+	 * Filter for pre_option_blog_public
+	 *
+	 * @param $return
+	 * @param $option
+	 *
+	 * @return boolean
+	 */
+	public function blog_public( $return, $option ) {
+		if ( ! isset( $this->current ) ) {
+			return $return;
+		}
+
+		switch ( $this->sites[ $this->current ]['robots'] ) {
+			case 'yes':
+				return 0;
+				break;
+			case 'no':
+				return 1;
+				break;
+			default:
+				return $return;
+		}
+	}
+
+	/**
 	 * Load Settings from Database
 	 */
 	private function load_sites() {
@@ -167,6 +199,7 @@ class ApermoAdminBar {
 				$dummysites[ $key ]['name'] = $allowed_page_type['label'];
 				$dummysites[ $key ]['color'] = $allowed_page_type['default'];
 				$dummysites[ $key ]['url'] = '';
+				$dummysites[ $key ]['robots'] = false;
 
 				if ( $this->domain_mapping ) {
 					$dummysites[ $key ]['mapping_url'] = '';
@@ -234,10 +267,31 @@ class ApermoAdminBar {
 	 * Load the AdminBar Color Scheme
 	 */
 	public function color_scheme() {
+		if ( ! isset( $this->current ) ) {
+			return;
+		}
+
 		$scheme = $this->admin_colors[ $this->sites[ $this->current ]['color'] ]->url;
 		if ( current_user_can( 'edit_posts' ) && ( is_admin() || is_admin_bar_showing() ) ) {
 			wp_enqueue_style( 'apermo-adminbar-colors', $scheme, array() );
 			wp_enqueue_style( 'apermo-adminbar', plugins_url( 'css/style.css', __FILE__ ) );
+		}
+	}
+
+	/**
+	 * Load the JS if on options-reading
+	 */
+	public function options_reading() {
+		if ( ! isset( $this->current ) ) {
+			return;
+		}
+		$screen = get_current_screen();
+
+		if ( 'WP_Screen' == get_class( $screen ) && 'options-reading' == $screen->base && in_array( $this->sites[ $this->current ]['robots'], array( 'yes', 'no' ) ) ) {
+
+			$data['disabled_message'] = __( '<strong>Notice:</strong> This feature has been disabled. See Settings -> Apermo AdminBar', 'apermo-adminbar' );
+			wp_enqueue_script( 'apermo-adminbar', plugins_url( 'js/script.js', __FILE__ ), array( 'jquery' ) );
+			wp_localize_script( 'apermo-adminbar', 'apermo_adminbar', $data );
 		}
 	}
 
@@ -269,6 +323,10 @@ class ApermoAdminBar {
 	 * @return void
 	 */
 	public function admin_bar_filter( $wp_admin_bar ) {
+		if ( ! isset( $this->current ) ) {
+			return;
+		}
+
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			// This feature is only for contributors or better.
 			return;
@@ -312,8 +370,12 @@ class ApermoAdminBar {
 	 * Get the Request Part that is not Subfolder for the WordPress installation.
 	 */
 	public function get_request() {
+		if ( ! isset( $this->current ) ) {
+			return;
+		}
+
 		$request = $this->no_http_s( esc_url_raw( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ) );
-		$url_types = array( 'url', 'mapping_url');
+		$url_types = array( 'url', 'mapping_url' );
 
 		foreach ( $url_types as $url_type ) {
 			$url = $this->no_http_s( $this->sites[ $this->current ][ $url_type ] );
@@ -400,6 +462,15 @@ class ApermoAdminBar {
 			);
 
 			add_settings_field(
+				'apermo_adminbar_sites_' . $key . '_robots',
+				__( 'Search Engine Visibility' ),
+				array( $this, 'robots_render' ),
+				'apermo_adminbar',
+				'apermo_adminbar_sites_section_' . $key,
+				array( 'key' => $key, 'data' => $data )
+			);
+
+			add_settings_field(
 				'apermo_adminbar_sites_' . $key . '_url',
 				__( 'URL', 'apermo-adminbar' ),
 				array( $this, 'url_render' ),
@@ -467,6 +538,23 @@ class ApermoAdminBar {
 	public function name_render( $args ) {
 		$setting = $this->sites[ $args['key'] ]['name'];
 		echo '<input type="text" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_name" name="apermo_adminbar_sites[' . $args['key'] . '][name]" placeholder="' . esc_attr( $args['data']['label'] ) . '" value="' . esc_attr( $setting ) . '" class="regular-text">';
+	}
+
+	/**
+	 * Checkbox for robots
+	 *
+	 * @param array $args Arguments, especially the key for the input field.
+	 */
+	public function robots_render( $args ) {
+		$setting = $this->sites[ $args['key'] ]['robots'];
+		if ( ! in_array( $setting, array( 'yes', 'no' ) ) ) {
+			$setting = 'default';
+		}
+		echo  __( 'Discourage search engines from indexing this site' ) . '<br>';
+		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_yes" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="yes" ' . checked( 'yes', $setting, false ) . '>' . __( 'Yes', 'apermo-adminbar' ) . '</label><br>';
+		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_no" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="no" ' . checked( 'no', $setting, false ) . '>' . __( 'No', 'apermo-adminbar' ) . '</label><br>';
+		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_default" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="default" ' . checked( 'default', $setting, false ) . '>' . sprintf( __( 'Use <a href="%s">Settings -> Read</a>', 'apermo-adminbar' ), get_site_url() . '/wp-admin/options-reading.php' ) . '</label><br>';
+		echo '<p class="description">' . __( '<strong>Notice:</strong> This will only work, if you did not place a custom "robots.txt" into your root.', 'apermo-adminbar' ) . '</p>';
 	}
 
 	/**
@@ -591,6 +679,7 @@ class ApermoAdminBar {
 			$key = sanitize_key( $key );
 			// Check if the incoming page exists, otherwise ignore.
 			if ( array_key_exists( $key, $this->allowed_page_types ) ) {
+
 				$data['name'] = esc_html( strip_tags( $data['name'] ) );
 
 				if ( ! array_key_exists( $data['color'], $this->admin_colors ) ) {
@@ -601,6 +690,8 @@ class ApermoAdminBar {
 
 				//Multisite support, only the input field is conditional, so that this could still be set with a filter
 				$data['mapping_url'] = trim( esc_url_raw( $data['mapping_url'] ), '/' );
+
+				$data['robots'] = in_array( $data['robots'], array( 'yes', 'no' ) ) ? $data['robots'] : false;
 
 				// It only makes sense to save, if there is a URL, otherwise just drop it.
 				if ( $data['url'] ) {

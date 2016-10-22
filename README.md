@@ -3,15 +3,16 @@
 * Tags: admin bar, admin, development, staging
 * Requires at least: 4.0
 * Tested up to: 4.5.3
-* Stable tag: 0.9.5
+* Stable tag: 0.9.9
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This plugin lets allows you to add links between a development, staging and live version of your website, and adds them to the AdminBar
+This plugin allows you to add links between a development, staging and live version of your website, and adds them to the AdminBar.
 
 ## Description ##
 
-This plugin alters the AdminBar and adds links to development, staging and live version of your website, furthermore it allows you to choose a color scheme of your AdminBar for all users on a website, including the frontend
+This plugin enhances the AdminBar and adds links to development, staging and live version of your website, furthermore it allows you to choose a color scheme of your AdminBar for all users on a website, including the frontend.
+Since 0.9.9 it also gives you the option to take controll over the robots.txt visibility settings.
 
 If you want to participate in the development [head over to GitHub](https://github.com/apermo/apermo-adminbar)!
 
@@ -47,6 +48,13 @@ function sites_filter( $sites ) {
 ```
 
 ## Changelog ##
+
+### 0.9.9 ###
+* added support for multisite domain mapping
+* added support for robots.txt
+
+### 0.9.6 ###
+* fixed typos
 
 ### 0.9.5 ###
 * fixed bug for subfolder installations
