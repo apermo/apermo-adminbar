@@ -2,8 +2,8 @@
 * Contributors: apermo
 * Tags: admin bar, admin, development, staging
 * Requires at least: 4.0
-* Tested up to: 4.5.3
-* Stable tag: 0.9.9
+* Tested up to: 4.6.1
+* Stable tag: 0.9.10
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,10 @@ function sites_filter( $sites ) {
 ```
 
 ## Changelog ##
+
+### 0.9.10 ###
+* disable all options if filter is used
+* fixed: robots.txt defaults were ignored
 
 ### 0.9.9 ###
 * added support for multisite domain mapping
