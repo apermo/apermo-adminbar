@@ -1,6 +1,6 @@
 # Apermo AdminBar #
 * Contributors: apermo
-* Tags: admin bar, admin, development, staging
+* Tags: admin bar, admin, development, staging, robots
 * Requires at least: 4.0
 * Tested up to: 4.6.1
 * Stable tag: 0.9.10
