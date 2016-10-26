@@ -7,7 +7,7 @@
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
  * Plugin URI: https://wordpress.org/plugins/apermo-adminbar/
- * Version: 0.9.9
+ * Version: 0.9.10
  * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
@@ -199,7 +199,7 @@ class ApermoAdminBar {
 				$dummysites[ $key ]['name'] = $allowed_page_type['label'];
 				$dummysites[ $key ]['color'] = $allowed_page_type['default'];
 				$dummysites[ $key ]['url'] = '';
-				$dummysites[ $key ]['robots'] = false;
+				$dummysites[ $key ]['robots'] = $allowed_page_type['robots'];
 
 				if ( $this->domain_mapping ) {
 					$dummysites[ $key ]['mapping_url'] = '';
@@ -412,14 +412,18 @@ class ApermoAdminBar {
 				if ( $this->is_from_filter ) {
 				?>
 					<div id="setting-error-settings_updated" class="error settings-error notice">
-						<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings will have no further effect.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
+						<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
 					</div>
+					<fieldset disabled="disabled">
 				<?php
+				} else {
+					?><fieldset><?php
 				}
 				settings_fields( 'apermo_adminbar' );
 				do_settings_sections( 'apermo_adminbar' );
 				submit_button();
 				?>
+				</fieldset>
 			</form>
 			<p class="clear"><strong>*) <?php esc_html_e( 'Sites without URL will not be saved to the database, name and color scheme will be dropped.', 'apermo-adminbar' ); ?></strong></p>
 		</div>
