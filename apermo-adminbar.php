@@ -7,7 +7,7 @@
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
  * Plugin URI: https://wordpress.org/plugins/apermo-adminbar/
- * Version: 0.9.10
+ * Version: 0.9.11
  * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
@@ -103,7 +103,9 @@ class ApermoAdminBar {
 		add_action( 'init', array( $this, 'sort_admin_colors' ), 99 );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
-		add_action( 'wp_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
+
+		//has to be loaded as early as possible to ensure that the css does not overwrite theme css.
+		add_action( 'admin_bar_init', array( $this, 'color_scheme' ), 1 );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'options_reading' ) );
 
@@ -411,19 +413,19 @@ class ApermoAdminBar {
 				<?php
 				if ( $this->is_from_filter ) {
 				?>
-					<div id="setting-error-settings_updated" class="error settings-error notice">
-						<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
-					</div>
-					<fieldset disabled="disabled">
-				<?php
-				} else {
+				<div id="setting-error-settings_updated" class="error settings-error notice">
+					<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
+				</div>
+				<fieldset disabled="disabled">
+					<?php
+					} else {
 					?><fieldset><?php
-				}
-				settings_fields( 'apermo_adminbar' );
-				do_settings_sections( 'apermo_adminbar' );
-				submit_button();
-				?>
-				</fieldset>
+						}
+						settings_fields( 'apermo_adminbar' );
+						do_settings_sections( 'apermo_adminbar' );
+						submit_button();
+						?>
+					</fieldset>
 			</form>
 			<p class="clear"><strong>*) <?php esc_html_e( 'Sites without URL will not be saved to the database, name and color scheme will be dropped.', 'apermo-adminbar' ); ?></strong></p>
 		</div>
@@ -646,10 +648,10 @@ class ApermoAdminBar {
 	public function export_render() {
 		?>
 		<?php if ( count( $this->sites ) ) { ?>
-		<p><?php esc_html_e( 'Copy this this text into the import textarea of another site.', 'apermo-adminbar' ); ?></p>
-		<pre style="max-width: 400px; white-space: pre-wrap;"><?php echo serialize( $this->sites ); ?></pre>
+			<p><?php esc_html_e( 'Copy this this text into the import textarea of another site.', 'apermo-adminbar' ); ?></p>
+			<pre style="max-width: 400px; white-space: pre-wrap;"><?php echo serialize( $this->sites ); ?></pre>
 		<?php } else { ?>
-		<p><?php esc_html_e( 'Nothing to export', 'apermo-adminbar' ); ?></p>
+			<p><?php esc_html_e( 'Nothing to export', 'apermo-adminbar' ); ?></p>
 		<?php }
 	}
 

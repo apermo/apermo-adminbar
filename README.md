@@ -1,9 +1,9 @@
 # Apermo AdminBar #
 * Contributors: apermo
-* Tags: admin bar, admin, development, staging, robots
+* Tags: admin bar, adminbar, admin, development, staging, robots
 * Requires at least: 4.0
 * Tested up to: 4.6.1
-* Stable tag: 0.9.10
+* Stable tag: 0.9.11
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,7 +36,7 @@ Feel free to add more, there are other plugins that do so. Or have a look at [wp
 ### Can I save the color schemes to my theme? ###
 Yes, you can. Simply add and alter the following example somewhere to the functions.php of your theme
 
-```
+`
 add_filter( 'apermo-adminbar-sites', 'sites_filter' );
 
 function sites_filter( $sites ) {
@@ -45,9 +45,12 @@ function sites_filter( $sites ) {
     $sites['live']['url'] = 'https://www.your-site.tld';
     return $sites;
 }
-```
+`
 
 ## Changelog ##
+
+### 0.9.11 ###
+* fixed: css from admin_bar was loaded late, so &gt;a&lt; tags mostly where miscolored.
 
 ### 0.9.10 ###
 * disable all options if filter is used
