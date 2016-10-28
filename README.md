@@ -1,9 +1,9 @@
 # Apermo AdminBar #
 * Contributors: apermo
-* Tags: admin bar, adminbar, admin, development, staging, robots
+* Tags: admin bar, adminbar, admin, developer, development, staging, robots
 * Requires at least: 4.0
 * Tested up to: 4.6.1
-* Stable tag: 0.9.11
+* Stable tag: 1.0.0
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,18 +36,31 @@ Feel free to add more, there are other plugins that do so. Or have a look at [wp
 ### Can I save the color schemes to my theme? ###
 Yes, you can. Simply add and alter the following example somewhere to the functions.php of your theme
 
-`
+<code>
 add_filter( 'apermo-adminbar-sites', 'sites_filter' );
 
 function sites_filter( $sites ) {
     $sites['dev']['url'] = 'http://dev.your-site.tld';
+    $sites['dev']['whitelist'] = array( 1,42 );
     $sites['staging']['url'] = 'http://staging.your-site.tld';
     $sites['live']['url'] = 'https://www.your-site.tld';
     return $sites;
 }
-`
+</code>
+
+### Can I hide, for example the development page, for certain users ###
+Yes, you can use the filter `add_filter( 'apermo-adminbar-sites', 'sites_filter' );` with the option `whitelist` to allow access to the corresponding site only for the whitelisted user ids.
+An option for this might be added in the future. 
+
+### Can I change the default capability needed to access the quicklinks? ###
+Yes, use `add_filter( 'apermo-adminbar-caps', 'sites_filter' );` and just return the desired capability.
 
 ## Changelog ##
+
+### 1.0.0 ###
+* fixed: do not add a spacer if no quicklinks are added
+* added: option to hide stages by whitelisting the stage for given user ids
+* added: option to set the default capability needed to use the quicklinks
 
 ### 0.9.11 ###
 * fixed: css from admin_bar was loaded late, so &gt;a&lt; tags mostly where miscolored.

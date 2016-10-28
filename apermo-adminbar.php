@@ -136,18 +136,21 @@ class ApermoAdminBar {
 				'description' => __( 'Your development site, probably a local version on the development machine', 'apermo-adminbar' ),
 				'default' => 'sunrise',
 				'robots' => 'yes',
+				'whitelist' => array(),
 			),
 			'staging' => array(
 				'label' => __( 'Staging Site', 'apermo-adminbar' ),
 				'description' => __( 'Your staging site, for testing and other purposes', 'apermo-adminbar' ),
 				'default' => 'blue',
 				'robots' => 'yes',
+				'whitelist' => array(),
 			),
 			'live' => array(
 				'label' => __( 'Live Site', 'apermo-adminbar' ),
 				'description' => __( 'Your production site', 'apermo-adminbar' ),
 				'default' => 'fresh',
 				'robots' => false,
+				'whitelist' => array(),
 			),
 		);
 
@@ -202,6 +205,7 @@ class ApermoAdminBar {
 				$dummysites[ $key ]['color'] = $allowed_page_type['default'];
 				$dummysites[ $key ]['url'] = '';
 				$dummysites[ $key ]['robots'] = $allowed_page_type['robots'];
+				$dummysites[ $key ]['whitelist'] = $allowed_page_type['whitelist'];
 
 				if ( $this->domain_mapping ) {
 					$dummysites[ $key ]['mapping_url'] = '';
@@ -329,11 +333,13 @@ class ApermoAdminBar {
 			return;
 		}
 
-		if ( ! current_user_can( 'edit_posts' ) ) {
-			// This feature is only for contributors or better.
+		// This feature is by default only for contributors or better.
+		$caps_needed = apply_filters( 'apermo-adminbar-caps', 'edit_posts' );
+		if ( ! current_user_can( $caps_needed ) ) {
 			return;
 		}
-		self::add_spacer( $wp_admin_bar );
+
+		$node_added = false;
 
 		foreach ( $this->sites as $key => $site ) {
 			// Check if there is a URL.
@@ -345,25 +351,35 @@ class ApermoAdminBar {
 					if ( $this->domain_mapping && isset( $site['mapping_url'] ) && $site['mapping_url'] ) {
 						$base_url = $site['mapping_url'];
 					}
-					$wp_admin_bar->add_node( array(
-						'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key ),
-						'title'		=> esc_html( $site['name'] ),
-						'parent'	=> 'site-name',
-						'href'		=> esc_url( $base_url ),
-					) );
-					// Check if we are on a different page than the homepage.
-					if ( strlen( $this->get_request() ) > 1 ) {
+
+					//only go on if there is no whitelist, or user is whitelisted
+					if ( ! count( $site['whitelist'] ) || in_array( get_current_user_id(), $site['whitelist'] ) ) {
+						if ( ! $node_added ) {
+							self::add_spacer( $wp_admin_bar );
+						}
+						$node_added = true;
+
 						$wp_admin_bar->add_node( array(
-							'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key . '-same' ),
-							'title'		=> esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'apermo-adminbar' ),
+							'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key ),
+							'title'		=> esc_html( $site['name'] ),
 							'parent'	=> 'site-name',
-							'href'		=> esc_url( $base_url . $this->get_request() ),
+							'href'		=> esc_url( $base_url ),
 						) );
+						// Check if we are on a different page than the homepage.
+						if ( strlen( $this->get_request() ) > 1 ) {
+							$wp_admin_bar->add_node( array(
+								'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key . '-same' ),
+								'title'		=> esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'apermo-adminbar' ),
+								'parent'	=> 'site-name',
+								'href'		=> esc_url( $base_url . $this->get_request() ),
+							) );
+						}
 					}
 				}
 			}
 		}
-		if ( ! is_admin() ) {
+
+		if ( ! is_admin()  && $node_added ) {
 			self::add_spacer( $wp_admin_bar );
 		}
 	}
@@ -698,6 +714,15 @@ class ApermoAdminBar {
 				$data['mapping_url'] = trim( esc_url_raw( $data['mapping_url'] ), '/' );
 
 				$data['robots'] = in_array( $data['robots'], array( 'yes', 'no' ) ) ? $data['robots'] : false;
+
+				if ( is_array( $data['whitelist'] ) ) {
+					foreach ( $data['whitelist'] as &$value ) {
+						$value = (int) $value;
+					}
+					$data['whitelist'] = array_filter( $data['whitelist'] );
+				} else {
+					$data['whitelist'] = array();
+				}
 
 				// It only makes sense to save, if there is a URL, otherwise just drop it.
 				if ( $data['url'] ) {
