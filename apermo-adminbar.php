@@ -7,8 +7,8 @@
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
  * Plugin URI: https://wordpress.org/plugins/apermo-adminbar/
- * Version: 1.0.0
- * Description: A simple plugin that allows you to add custom links to the AdminBar, navigation between your live and dev systems
+ * Version: 1.1.0
+ * Description: A simple plugin that enhances the AdminBar with navigation links between your different stages, a statusbox about the current post and keyboard shortcuts to hide or show the adminbar
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
  * Text Domain: apermo-adminbar
@@ -85,7 +85,7 @@ class ApermoAdminBar {
 	private $domain_mapping = false;
 
 	/**
-	 * ApLiveDevAdminBar constructor.
+	 * ApermoAdminBar constructor.
 	 */
 	public function __construct() {
 		global $wpdb;
@@ -96,8 +96,23 @@ class ApermoAdminBar {
 			$this->domain_mapping = true;
 		}
 
+		if ( ! is_admin() && apply_filters( 'apermo-adminbar-watermark', true ) ) {
+			require_once __DIR__ . '/classes/class.watermark.php';
+			new ApermoAdminBarWatermark();
+		}
+
+		if ( apply_filters( 'apermo-adminbar-statusbox', true ) ) {
+			require_once __DIR__ . '/classes/class.statusbox.php';
+			new ApermoAdminBarMetabox();
+		}
+
+		if ( apply_filters( 'apermo-adminbar-keycodes', true ) ) {
+			add_action( 'wp_enqueue_scripts', array( $this, 'js_keycodes' ) );
+		}
+
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ) , array( $this, 'plugin_action_links' ) );
 
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'init', array( $this, 'sort_admin_colors' ), 99 );
@@ -110,6 +125,20 @@ class ApermoAdminBar {
 		add_action( 'admin_enqueue_scripts', array( $this, 'options_reading' ) );
 
 		add_filter( 'pre_option_blog_public', array( $this, 'blog_public' ), 99, 2 );
+	}
+
+	/**
+	 * Show action links on the plugin screen.
+	 *
+	 * @param	mixed $links Plugin Action links.
+	 * @return	array
+	 */
+	public static function plugin_action_links( $links ) {
+		$action_links = array(
+			'settings' => '<a href="' . admin_url( 'options-general.php?page=apermo_adminbar' ) . '" title="' . esc_attr( __( 'View Apermo AdminBar Settings', 'apermo-adminbar' ) ) . '">' . __( 'Settings', 'wp-marketeer' ) . '</a>',
+		);
+
+		return array_merge( $action_links, $links );
 	}
 
 	/**
@@ -282,6 +311,10 @@ class ApermoAdminBar {
 			wp_enqueue_style( 'apermo-adminbar-colors', $scheme, array() );
 			wp_enqueue_style( 'apermo-adminbar', plugins_url( 'css/style.css', __FILE__ ) );
 		}
+	}
+
+	public function js_keycodes() {
+		wp_enqueue_script( 'apermo-adminbar-js-keycodes', plugins_url( 'js/keycodes.js', __FILE__ ), array( 'jquery' ) );
 	}
 
 	/**
@@ -576,7 +609,17 @@ class ApermoAdminBar {
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_yes" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="yes" ' . checked( 'yes', $setting, false ) . '>' . __( 'Yes', 'apermo-adminbar' ) . '</label><br>';
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_no" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="no" ' . checked( 'no', $setting, false ) . '>' . __( 'No', 'apermo-adminbar' ) . '</label><br>';
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_default" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="default" ' . checked( 'default', $setting, false ) . '>' . sprintf( __( 'Use <a href="%s">Settings -> Read</a>', 'apermo-adminbar' ), get_site_url() . '/wp-admin/options-reading.php' ) . '</label><br>';
-		echo '<p class="description">' . __( '<strong>Notice:</strong> This will only work, if you did not place a custom "robots.txt" into your root.', 'apermo-adminbar' ) . '</p>';
+		echo '<p class="description">';
+		if ( file_exists( ABSPATH . '/robots.txt' ) ) {
+			_e( '<strong>Warning:</strong> This will only work, if you did not place a custom "robots.txt" into your root.', 'apermo-adminbar' );
+			echo '<br>';
+			_e( 'There is a robots.txt in your filesystem.', 'apermo-adminbar' );
+		} else {
+			_e( '<strong>Notice:</strong> This will only work, if you did not place a custom "robots.txt" into your root.', 'apermo-adminbar' );
+			echo '<br>';
+			_e( 'There was no robots.txt detected.', 'apermo-adminbar' );
+		}
+		echo '</p>';
 	}
 
 	/**

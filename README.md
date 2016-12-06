@@ -1,9 +1,9 @@
 # Apermo AdminBar #
 * Contributors: apermo
-* Tags: admin bar, adminbar, admin, developer, development, staging, robots
+* Tags: admin bar, adminbar, admin, developer, development, staging, robots, keyboard, shortcut
 * Requires at least: 4.0
-* Tested up to: 4.6.1
-* Stable tag: 1.0.0
+* Tested up to: 4.7.0
+* Stable tag: 1.1.0
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ This plugin allows you to add links between a development, staging and live vers
 ## Description ##
 
 This plugin enhances the AdminBar and adds links to development, staging and live version of your website, furthermore it allows you to choose a color scheme of your AdminBar for all users on a website, including the frontend.
-Since 0.9.9 it also gives you the option to take controll over the robots.txt visibility settings.
+You also have to option to control the robots.txt visibility settings, in the newest version you get a watermark for posts that are in draft or scheduled, and a keyboard shortcut to hide the adminbar.
 
 If you want to participate in the development [head over to GitHub](https://github.com/apermo/apermo-adminbar)!
 
@@ -23,9 +23,6 @@ If you want to participate in the development [head over to GitHub](https://gith
 3. Open Settings -> Apermo AdminBar to set up the links and colors (currently you have to repeat this on all sites)
 
 ## Frequently Asked Questions ##
-
-### How can I help with the development of this plugin? ###
-Head over to the [GitHub Repository](https://github.com/apermo/apermo-adminbar) and start reading. Every bit of help is highly appreciated!
 
 ### I have more than 3 sites, can I add more? ###
 You can do so with `add_filter( 'apermo-adminbar-types', 'your_filter' );`
@@ -55,7 +52,27 @@ An option for this might be added in the future.
 ### Can I change the default capability needed to access the quicklinks? ###
 Yes, use `add_filter( 'apermo-adminbar-caps', 'sites_filter' );` and just return the desired capability.
 
+### I do not need the watermark, how can I remove it? ###
+The simplest way is to use `add_filter( 'apermo-adminbar-watermark', function( $bool ) { return false; } );` and turn the feature off.
+
+### I do not need the statusbox, how can I remove it? ###
+The simplest way is to use `add_filter( 'apermo-adminbar-statusbox', function( $bool ) { return false; } );` and turn the feature off.
+
+### I do not need the keyboard shortcuts, how can I remove it? ###
+The simplest way is to use `add_filter( 'apermo-adminbar-keycodes', function( $bool ) { return false; } );` and turn the feature off.
+
+
+### How can I help with the development of this plugin? ###
+Head over to the [GitHub Repository](https://github.com/apermo/apermo-adminbar) and start reading. Every bit of help is highly appreciated!
+
 ## Changelog ##
+
+### 1.1.0 ###
+* added: keyboard shortcut CTRL + E to hide/show the adminbar in frontend
+* added: watermark for draft/scheduled post, to remind an editor of the current post status
+* added: keyboard shortcut CTRL + W to hide/show the watermark
+* added: the statusbox, a box containing useful information about the post, directly visible in the frontend
+
 
 ### 1.0.0 ###
 * fixed: do not add a spacer if no quicklinks are added
