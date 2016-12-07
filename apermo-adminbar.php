@@ -7,7 +7,7 @@
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
  * Plugin URI: https://wordpress.org/plugins/apermo-adminbar/
- * Version: 1.1.0
+ * Version: 1.1.1
  * Description: A simple plugin that enhances the AdminBar with navigation links between your different stages, a statusbox about the current post and keyboard shortcuts to hide or show the adminbar
  * Author: Christoph Daum
  * Author URI: http://apermo.de/

@@ -21,7 +21,7 @@ jQuery(document).ready(function ($) {
                 case 69: //e
                     adminbar_toggle();
                     break;
-                case 87: //w
+                case 68: //d
                     watermark_toggle();
                     break;
             }

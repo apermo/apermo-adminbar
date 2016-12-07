@@ -67,6 +67,9 @@ Head over to the [GitHub Repository](https://github.com/apermo/apermo-adminbar) 
 
 ## Changelog ##
 
+### 1.1.1 ###
+* fixed: keyboard shortcut for watermark is now CTRL + D
+
 ### 1.1.0 ###
 * added: keyboard shortcut CTRL + E to hide/show the adminbar in frontend
 * added: watermark for draft/scheduled post, to remind an editor of the current post status
