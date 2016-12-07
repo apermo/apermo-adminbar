@@ -68,7 +68,8 @@ Head over to the [GitHub Repository](https://github.com/apermo/apermo-adminbar) 
 ## Changelog ##
 
 ### 1.1.1 ###
-* fixed: keyboard shortcut for watermark is now CTRL + D
+* fixed: keyboard shortcut for watermark is now CTRL + 
+* changed: made status icons bigger & clearer, changed color for scheduled status
 
 ### 1.1.0 ###
 * added: keyboard shortcut CTRL + E to hide/show the adminbar in frontend

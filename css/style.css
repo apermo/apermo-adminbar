@@ -7,10 +7,8 @@
 #wpadminbar span.post_status {
     display: inline-block;
     border-radius: 50%;
-    height: 16px;
-    width: 16px;
-    margin-bottom: -5px;
-    border: 2px solid;
+    height: 12px;
+    width: 12px;
     background-color: #999;
 }
 
@@ -19,7 +17,7 @@
 }
 
 #wpadminbar span.post_status.future {
-    background-color: #3399ff;
+    background-color: blue;
 }
 
 #wpadminbar span.post_status.publish {
