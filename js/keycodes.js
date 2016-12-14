@@ -16,15 +16,25 @@ jQuery(document).ready(function ($) {
 
 
     $(document).on('keydown', function ( e ) {
-        if ( e.ctrlKey ) {
-            switch ( e.which ) {
-                case 69: //e
-                    adminbar_toggle();
-                    break;
-                case 68: //d
-                    watermark_toggle();
-                    break;
+        if ( navigator.platform == 'MacIntel' || navigator.platform == 'iPhone' || navigator.platform == 'iPad'  ) {
+            // Mac/iPhone
+            if ( ! ( e.metaKey && e.ctrlKey ) ) {
+                return;
             }
+        } else {
+            // Anything else
+            if ( ! ( e.altKey && e.shiftKey ) ) {
+                return;
+            }
+        }
+
+        switch ( e.which ) {
+            case 65: //a
+                adminbar_toggle();
+                break;
+            case 87: //w
+                watermark_toggle();
+                break;
         }
     });
 });

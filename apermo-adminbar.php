@@ -7,7 +7,7 @@
  * @wordpress-plugin
  * Plugin Name: Apermo AdminBar
  * Plugin URI: https://wordpress.org/plugins/apermo-adminbar/
- * Version: 1.1.1
+ * Version: 1.1.2
  * Description: A simple plugin that enhances the AdminBar with navigation links between your different stages, a statusbox about the current post and keyboard shortcuts to hide or show the adminbar
  * Author: Christoph Daum
  * Author URI: http://apermo.de/
@@ -121,6 +121,8 @@ class ApermoAdminBar {
 
 		//has to be loaded as early as possible to ensure that the css does not overwrite theme css.
 		add_action( 'admin_bar_init', array( $this, 'color_scheme' ), 1 );
+
+		add_filter( 'get_user_option_admin_color', array( $this, 'filter_admin_color' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'options_reading' ) );
 
@@ -311,6 +313,15 @@ class ApermoAdminBar {
 			wp_enqueue_style( 'apermo-adminbar-colors', $scheme, array() );
 			wp_enqueue_style( 'apermo-adminbar', plugins_url( 'css/style.css', __FILE__ ) );
 		}
+	}
+
+	/**
+	 * Filters the User defined admin_color and sets it to default.
+	 *
+	 * @return string
+	 */
+	public function filter_admin_color() {
+		return 'fresh';
 	}
 
 	public function js_keycodes() {

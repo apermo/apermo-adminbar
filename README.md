@@ -3,7 +3,7 @@
 * Tags: admin bar, adminbar, admin, developer, development, staging, robots, keyboard, shortcut
 * Requires at least: 4.0
 * Tested up to: 4.7.0
-* Stable tag: 1.1.1
+* Stable tag: 1.1.2
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,14 @@ If you want to participate in the development [head over to GitHub](https://gith
 1. Upload the plugin files to the `/wp-content/plugins/apermo-adminbar` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the 'Apermo AdminBar' plugin through the 'Plugins' menu in WordPress
 3. Open Settings -> Apermo AdminBar to set up the links and colors (currently you have to repeat this on all sites)
+
+== Screenshots ==
+
+1. The basic idea of the plugin, 3 instances of a website, with 3 distinct color schemes and quicklinks between the instances.
+2. The Adminbar on the frontend, showing the info panel on the right and the watermark for a draft post. The info panel can be hidden with a click. And there are keyboard shortcuts to hide the whole adminbar and the watermark to see what the site looks like for a regular user.
+3. The settings page, with the options for the first of the 3 default stages.
+4. The import and export function on the settings page.
+5. The settings page when the settings are set using the filter `add_filter( 'apermo-adminbar-sites', 'sites_filter' );`
 
 ## Frequently Asked Questions ##
 
@@ -67,8 +75,16 @@ Head over to the [GitHub Repository](https://github.com/apermo/apermo-adminbar) 
 
 ## Changelog ##
 
+
+
+### 1.1.2 ###
+* changed: Keyboard shortcuts had to be changed as they colided with windows standards
+* Hide Watermark: Mac: CMD + CTRL + W - Win/Linux: ALT + SHIFT + W
+* Hide Adminbar: Mac: CMD + CTRL + A - Win/Linux: ALT + SHIFT + A
+* fixed: backend color scheme was overwritten if being set by a user prior to plugin activation
+
 ### 1.1.1 ###
-* fixed: keyboard shortcut for watermark is now CTRL + 
+* fixed: keyboard shortcut for watermark is now CTRL + D
 * changed: made status icons bigger & clearer, changed color for scheduled status
 
 ### 1.1.0 ###
