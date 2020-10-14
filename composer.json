@@ -1,0 +1,21 @@
+{
+  "name": "apermo/apermo-adminbar",
+  "description": "A WordPress plugin, that adds links between your different development versions of your website.",
+  "minimum-stability": "stable",
+  "license": "GPL-2.0-or-later",
+  "support": {
+    "issues": "https://github.com/apermo/apermo-adminbar/issues"
+  },
+  "require": {
+    "php": ">=5.6"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "~0.6.0",
+    "wp-coding-standards/wpcs": "~2.3.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1.0"
+  },
+  "scripts": {
+    "format": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf --report=summary,source",
+    "lint": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs --report=summary,source"
+  }
+}
