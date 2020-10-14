@@ -23,9 +23,9 @@ class ApermoAdminBarMetabox {
 	}
 
 	public function init() {
-		$statusses = get_post_statuses();
+		$statusses           = get_post_statuses();
 		$statusses['future'] = __( 'Scheduled' );
-		$this->statusses = apply_filters( 'apermo-adminbar-statusses', $statusses );
+		$this->statusses     = apply_filters( 'apermo-adminbar-statusses', $statusses );
 	}
 
 	public function admin_bar_js() {
@@ -37,7 +37,7 @@ class ApermoAdminBarMetabox {
 	public function add_statusbox_entry( $id, $label, $info ) {
 		$this->statusbox_entries[ $id ] = array(
 			'label' => $label,
-			'info'	=> $info,
+			'info'  => $info,
 		);
 	}
 
@@ -67,19 +67,18 @@ class ApermoAdminBarMetabox {
 		if ( 'draft' !== $post->post_status ) {
 			$this->statusbox_entries['post_date'] = array(
 				'label' => $label,
-				'info' 	=> get_the_date( 'd.m.Y H:i', $post ),
+				'info'  => get_the_date( 'd.m.Y H:i', $post ),
 			);
 		}
 
 		$this->statusbox_entries['last_modified'] = array(
 			'label' => __( 'Last Modified' ),
-			'info' 	=> get_the_modified_date( 'd.m.Y H:i' ),
+			'info'  => get_the_modified_date( 'd.m.Y H:i' ),
 		);
-
 
 		$this->statusbox_entries['last_modified_by'] = array(
 			'label' => __( 'Modified by', 'apermo-adminbar' ),
-			'info' 	=> get_the_modified_author(),
+			'info'  => get_the_modified_author(),
 		);
 	}
 
@@ -108,22 +107,26 @@ class ApermoAdminBarMetabox {
 
 			global $post;
 
-			$wp_admin_bar->add_node( array(
-				'id'		=> 'metabox',
-				'title'		=> '<span class="post_status ' . $post->post_status . '"></span> ' . __( 'Post information', 'apermo-adminbar' ),
-				'parent'	=> 'top-secondary',
-				'href'		=> false,
-				'meta'		=> array(
-					'class' => $class,
-				),
-			) );
+			$wp_admin_bar->add_node(
+				array(
+					'id'     => 'metabox',
+					'title'  => '<span class="post_status ' . $post->post_status . '"></span> ' . __( 'Post information', 'apermo-adminbar' ),
+					'parent' => 'top-secondary',
+					'href'   => false,
+					'meta'   => array(
+						'class' => $class,
+					),
+				)
+			);
 
 			foreach ( $this->statusbox_entries as $key => $value ) {
-				$wp_admin_bar->add_node( array(
-					'id'		=> 'metabox_sub_' . $key,
-					'title'		=> '<span class="label">' . $value['label'] . ':</span>' . $value['info'],
-					'parent'	=> 'metabox',
-				) );
+				$wp_admin_bar->add_node(
+					array(
+						'id'     => 'metabox_sub_' . $key,
+						'title'  => '<span class="label">' . $value['label'] . ':</span>' . $value['info'],
+						'parent' => 'metabox',
+					)
+				);
 			}
 		}
 	}

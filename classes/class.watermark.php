@@ -15,9 +15,9 @@ class ApermoAdminBarWatermark {
 	}
 
 	public function init() {
-		$statusses = get_post_statuses();
+		$statusses           = get_post_statuses();
 		$statusses['future'] = __( 'Scheduled' );
-		$this->statusses = apply_filters( 'apermo-adminbar-statusses', $statusses );
+		$this->statusses     = apply_filters( 'apermo-adminbar-statusses', $statusses );
 	}
 
 	/**
@@ -36,7 +36,7 @@ class ApermoAdminBarWatermark {
 		if ( ! is_admin() && is_singular() ) {
 			global $post;
 			if ( 'publish' !== $post->post_status ) {
-				$data['post_status'] = $post->post_status;
+				$data['post_status']      = $post->post_status;
 				$data['post_status_nice'] = $this->statusses[ $post->post_status ];
 
 				wp_localize_script( 'apermo-adminbar-watermark', 'apermo_adminbar_watermark', $data );
