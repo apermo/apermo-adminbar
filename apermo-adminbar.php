@@ -112,7 +112,7 @@ class ApermoAdminBar {
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ) , array( $this, 'plugin_action_links' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_action_links' ) );
 
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'init', array( $this, 'sort_admin_colors' ), 99 );
@@ -132,8 +132,8 @@ class ApermoAdminBar {
 	/**
 	 * Show action links on the plugin screen.
 	 *
-	 * @param	mixed $links Plugin Action links.
-	 * @return	array
+	 * @param  mixed $links Plugin Action links.
+	 * @return array
 	 */
 	public static function plugin_action_links( $links ) {
 		$action_links = array(
@@ -162,26 +162,26 @@ class ApermoAdminBar {
 		 * 'key_for_form' => array( 'label' => 'Readable Label', 'descroption' => 'Short description', 'robots' => 'yes'|'no'|false )
 		 */
 		$types = array(
-			'dev' => array(
-				'label' => __( 'Development Site', 'apermo-adminbar' ),
+			'dev'     => array(
+				'label'       => __( 'Development Site', 'apermo-adminbar' ),
 				'description' => __( 'Your development site, probably a local version on the development machine', 'apermo-adminbar' ),
-				'default' => 'sunrise',
-				'robots' => 'yes',
-				'whitelist' => array(),
+				'default'     => 'sunrise',
+				'robots'      => 'yes',
+				'whitelist'   => array(),
 			),
 			'staging' => array(
-				'label' => __( 'Staging Site', 'apermo-adminbar' ),
+				'label'       => __( 'Staging Site', 'apermo-adminbar' ),
 				'description' => __( 'Your staging site, for testing and other purposes', 'apermo-adminbar' ),
-				'default' => 'blue',
-				'robots' => 'yes',
-				'whitelist' => array(),
+				'default'     => 'blue',
+				'robots'      => 'yes',
+				'whitelist'   => array(),
 			),
-			'live' => array(
-				'label' => __( 'Live Site', 'apermo-adminbar' ),
+			'live'    => array(
+				'label'       => __( 'Live Site', 'apermo-adminbar' ),
 				'description' => __( 'Your production site', 'apermo-adminbar' ),
-				'default' => 'fresh',
-				'robots' => false,
-				'whitelist' => array(),
+				'default'     => 'fresh',
+				'robots'      => false,
+				'whitelist'   => array(),
 			),
 		);
 
@@ -232,10 +232,10 @@ class ApermoAdminBar {
 		if ( has_filter( 'apermo-adminbar-sites' ) ) {
 			$dummysites = array();
 			foreach ( $this->allowed_page_types as $key => $allowed_page_type ) {
-				$dummysites[ $key ]['name'] = $allowed_page_type['label'];
-				$dummysites[ $key ]['color'] = $allowed_page_type['default'];
-				$dummysites[ $key ]['url'] = '';
-				$dummysites[ $key ]['robots'] = $allowed_page_type['robots'];
+				$dummysites[ $key ]['name']      = $allowed_page_type['label'];
+				$dummysites[ $key ]['color']     = $allowed_page_type['default'];
+				$dummysites[ $key ]['url']       = '';
+				$dummysites[ $key ]['robots']    = $allowed_page_type['robots'];
 				$dummysites[ $key ]['whitelist'] = $allowed_page_type['whitelist'];
 
 				if ( $this->domain_mapping ) {
@@ -244,12 +244,12 @@ class ApermoAdminBar {
 			}
 			// Filter against a default set of sites and afterwards use the sanitize function.
 			$this->is_from_filter = true;
-			$this->sites = $this->sanitize( apply_filters( 'apermo-adminbar-sites', $dummysites ) );
+			$this->sites          = $this->sanitize( apply_filters( 'apermo-adminbar-sites', $dummysites ) );
 		}
 		// If the sites are still empty load the settings from the DB.
 		if ( ! count( $this->sites ) ) {
 			$this->is_from_filter = false;
-			$this->sites = get_option( 'apermo_adminbar_sites', array() );
+			$this->sites          = get_option( 'apermo_adminbar_sites', array() );
 		}
 	}
 
@@ -294,7 +294,15 @@ class ApermoAdminBar {
 
 		if ( isset( $this->admin_colors['fresh'] ) ) {
 			// Set Default ('fresh') and Light should go first.
-			$this->admin_colors = array_filter( array_merge( array( 'fresh' => '', 'light' => '' ), $this->admin_colors ) );
+			$this->admin_colors = array_filter(
+				array_merge(
+					array(
+						'fresh' => '',
+						'light' => '',
+					),
+					$this->admin_colors
+				)
+			);
 		}
 
 		$this->admin_colors = apply_filters( 'apermo-adminbar-colors', $this->admin_colors );
@@ -353,15 +361,17 @@ class ApermoAdminBar {
 	 * @param WP_Admin_Bar $wp_admin_bar The WP AdminBar.
 	 */
 	public static function add_spacer( $wp_admin_bar ) {
-		$wp_admin_bar->add_node( array(
-			'id'		=> 'spacer' . self::$spacer_count,
-			'title'		=> '',
-			'parent'	=> 'site-name',
-			'href'		=> false,
-			'meta'		=> array(
-				'class' => 'spacer',
-			),
-		) );
+		$wp_admin_bar->add_node(
+			array(
+				'id'     => 'spacer' . self::$spacer_count,
+				'title'  => '',
+				'parent' => 'site-name',
+				'href'   => false,
+				'meta'   => array(
+					'class' => 'spacer',
+				),
+			)
+		);
 		self::$spacer_count++;
 	}
 
@@ -403,27 +413,31 @@ class ApermoAdminBar {
 						}
 						$node_added = true;
 
-						$wp_admin_bar->add_node( array(
-							'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key ),
-							'title'		=> esc_html( $site['name'] ),
-							'parent'	=> 'site-name',
-							'href'		=> esc_url( $base_url ),
-						) );
+						$wp_admin_bar->add_node(
+							array(
+								'id'     => esc_attr( 'apermo_adminbar_menu_' . $key ),
+								'title'  => esc_html( $site['name'] ),
+								'parent' => 'site-name',
+								'href'   => esc_url( $base_url ),
+							)
+						);
 						// Check if we are on a different page than the homepage.
 						if ( strlen( $this->get_request() ) > 1 ) {
-							$wp_admin_bar->add_node( array(
-								'id'		=> esc_attr( 'apermo_adminbar_menu_' . $key . '-same' ),
-								'title'		=> esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'apermo-adminbar' ),
-								'parent'	=> 'site-name',
-								'href'		=> esc_url( $base_url . $this->get_request() ),
-							) );
+							$wp_admin_bar->add_node(
+								array(
+									'id'     => esc_attr( 'apermo_adminbar_menu_' . $key . '-same' ),
+									'title'  => esc_html( $site['name'] ) . ' ' . __( '(Same page)', 'apermo-adminbar' ),
+									'parent' => 'site-name',
+									'href'   => esc_url( $base_url . $this->get_request() ),
+								)
+							);
 						}
 					}
 				}
 			}
 		}
 
-		if ( ! is_admin()  && $node_added ) {
+		if ( ! is_admin() && $node_added ) {
 			self::add_spacer( $wp_admin_bar );
 		}
 	}
@@ -436,7 +450,7 @@ class ApermoAdminBar {
 			return;
 		}
 
-		$request = $this->no_http_s( esc_url_raw( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ) );
+		$request   = $this->no_http_s( esc_url_raw( $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ) );
 		$url_types = array( 'url', 'mapping_url' );
 
 		foreach ( $url_types as $url_type ) {
@@ -472,19 +486,21 @@ class ApermoAdminBar {
 				<h1><?php esc_html_e( 'Apermo AdminBar', 'apermo-adminbar' ); ?></h1>
 				<?php
 				if ( $this->is_from_filter ) {
-				?>
+					?>
 				<div id="setting-error-settings_updated" class="error settings-error notice">
 					<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
 				</div>
 				<fieldset disabled="disabled">
 					<?php
-					} else {
-					?><fieldset><?php
-						}
+				} else {
+					?>
+					<fieldset>
+					<?php
+				}
 						settings_fields( 'apermo_adminbar' );
 						do_settings_sections( 'apermo_adminbar' );
 						submit_button();
-						?>
+				?>
 					</fieldset>
 			</form>
 			<p class="clear"><strong>*) <?php esc_html_e( 'Sites without URL will not be saved to the database, name and color scheme will be dropped.', 'apermo-adminbar' ); ?></strong></p>
@@ -524,7 +540,10 @@ class ApermoAdminBar {
 				array( $this, 'name_render' ),
 				'apermo_adminbar',
 				'apermo_adminbar_sites_section_' . $key,
-				array( 'key' => $key, 'data' => $data )
+				array(
+					'key'  => $key,
+					'data' => $data,
+				)
 			);
 
 			add_settings_field(
@@ -533,7 +552,10 @@ class ApermoAdminBar {
 				array( $this, 'robots_render' ),
 				'apermo_adminbar',
 				'apermo_adminbar_sites_section_' . $key,
-				array( 'key' => $key, 'data' => $data )
+				array(
+					'key'  => $key,
+					'data' => $data,
+				)
 			);
 
 			add_settings_field(
@@ -542,7 +564,10 @@ class ApermoAdminBar {
 				array( $this, 'url_render' ),
 				'apermo_adminbar',
 				'apermo_adminbar_sites_section_' . $key,
-				array( 'key' => $key, 'data' => $data )
+				array(
+					'key'  => $key,
+					'data' => $data,
+				)
 			);
 
 			if ( $this->domain_mapping ) {
@@ -552,7 +577,10 @@ class ApermoAdminBar {
 					array( $this, 'mapping_url_render' ),
 					'apermo_adminbar',
 					'apermo_adminbar_sites_section_' . $key,
-					array( 'key' => $key, 'data' => $data )
+					array(
+						'key'  => $key,
+						'data' => $data,
+					)
 				);
 			}
 
@@ -562,7 +590,10 @@ class ApermoAdminBar {
 				array( $this, 'color_render' ),
 				'apermo_adminbar',
 				'apermo_adminbar_sites_section_' . $key,
-				array( 'key' => $key, 'data' => $data )
+				array(
+					'key'  => $key,
+					'data' => $data,
+				)
 			);
 		}
 
@@ -616,7 +647,7 @@ class ApermoAdminBar {
 		if ( ! in_array( $setting, array( 'yes', 'no' ) ) ) {
 			$setting = 'default';
 		}
-		echo  __( 'Discourage search engines from indexing this site' ) . '<br>';
+		echo __( 'Discourage search engines from indexing this site' ) . '<br>';
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_yes" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="yes" ' . checked( 'yes', $setting, false ) . '>' . __( 'Yes', 'apermo-adminbar' ) . '</label><br>';
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_no" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="no" ' . checked( 'no', $setting, false ) . '>' . __( 'No', 'apermo-adminbar' ) . '</label><br>';
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_default" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="default" ' . checked( 'default', $setting, false ) . '>' . sprintf( __( 'Use <a href="%s">Settings -> Read</a>', 'apermo-adminbar' ), get_site_url() . '/wp-admin/options-reading.php' ) . '</label><br>';
@@ -660,7 +691,7 @@ class ApermoAdminBar {
 	 * @param array $args Arguments, especially the key for the input field.
 	 */
 	public function color_render( $args ) {
-		$key = $args['key'];
+		$key           = $args['key'];
 		$current_color = $this->sites[ $args['key'] ]['color'];
 
 		if ( empty( $current_color ) || ! isset( $this->admin_colors[ $current_color ] ) ) {
@@ -722,7 +753,8 @@ class ApermoAdminBar {
 			<pre style="max-width: 400px; white-space: pre-wrap;"><?php echo serialize( $this->sites ); ?></pre>
 		<?php } else { ?>
 			<p><?php esc_html_e( 'Nothing to export', 'apermo-adminbar' ); ?></p>
-		<?php }
+			<?php
+		}
 	}
 
 
@@ -801,6 +833,9 @@ class ApermoAdminBar {
 }
 
 // Run boy, run!
-add_action( 'plugins_loaded', function () {
-	new ApermoAdminBar();
-} );
+add_action(
+	'plugins_loaded',
+	function () {
+		new ApermoAdminBar();
+	}
+);
