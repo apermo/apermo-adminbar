@@ -3,6 +3,12 @@
   "description": "A WordPress plugin, that adds links between your different development versions of your website.",
   "minimum-stability": "stable",
   "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Contributors",
+      "homepage": "https://github.com/apermo/apermo-adminbar/graphs/contributors"
+    }
+  ],
   "support": {
     "issues": "https://github.com/apermo/apermo-adminbar/issues"
   },
