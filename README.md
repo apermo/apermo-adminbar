@@ -1,9 +1,9 @@
 # Apermo AdminBar #
 * Contributors: apermo
 * Tags: admin bar, adminbar, admin, developer, development, staging, robots, keyboard, shortcut
-* Requires at least: 4.0
-* Tested up to: 4.7.0
-* Stable tag: 1.1.2
+* Requires at least: 5.3
+* Tested up to: 5.7.0
+* Stable tag: 2.0.0
 * License: GNU General Public License v2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,16 +58,16 @@ Yes, you can use the filter `add_filter( 'apermo-adminbar-sites', 'sites_filter'
 An option for this might be added in the future. 
 
 ### Can I change the default capability needed to access the quicklinks? ###
-Yes, use `add_filter( 'apermo-adminbar-caps', 'sites_filter' );` and just return the desired capability.
+Yes, use `add_filter( 'apermo_adminbar_caps', 'sites_filter' );` and just return the desired capability.
 
 ### I do not need the watermark, how can I remove it? ###
-The simplest way is to use `add_filter( 'apermo-adminbar-watermark', function( $bool ) { return false; } );` and turn the feature off.
+The simplest way is to use `add_filter( 'apermo_adminbar_watermark', function( $bool ) { return false; } );` and turn the feature off.
 
 ### I do not need the statusbox, how can I remove it? ###
-The simplest way is to use `add_filter( 'apermo-adminbar-statusbox', function( $bool ) { return false; } );` and turn the feature off.
+The simplest way is to use `add_filter( 'apermo_adminbar_statusbox', function( $bool ) { return false; } );` and turn the feature off.
 
 ### I do not need the keyboard shortcuts, how can I remove it? ###
-The simplest way is to use `add_filter( 'apermo-adminbar-keycodes', function( $bool ) { return false; } );` and turn the feature off.
+The simplest way is to use `add_filter( 'apermo_adminbar_keycodes', function( $bool ) { return false; } );` and turn the feature off.
 
 
 ### How can I help with the development of this plugin? ###
