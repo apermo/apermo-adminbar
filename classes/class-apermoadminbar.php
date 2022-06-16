@@ -153,7 +153,7 @@ class ApermoAdminBar {
 		remove_action( 'admin_color_scheme_picker', 'admin_color_scheme_picker' );
 
 		// Allow to add (or remove) further page types via filter.
-		$this->allowed_page_types = apply_filters( 'apermo-adminbar-types', $types );
+		$this->allowed_page_types = apply_filters( 'apermo_adminbar_types', $types );
 		// 'all' is reserved, it is used for the serialized data, and it would possibly create side effects.
 		unset( $this->allowed_page_types['all'] );
 		$this->load_sites();

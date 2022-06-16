@@ -33,7 +33,7 @@ If you want to participate in the development [head over to GitHub](https://gith
 ## Frequently Asked Questions ##
 
 ### I have more than 3 sites, can I add more? ###
-You can do so with `add_filter( 'apermo-adminbar-types', 'your_filter' );`
+You can do so with `add_filter( 'apermo_adminbar_types', 'your_filter' );`
 
 ### I want more color schemes! ###
 Feel free to add more, there are other plugins that do so. Or have a look at [wp_admin_css_color() in the WordPress Codex](https://codex.wordpress.org/Function_Reference/wp_admin_css_color)
