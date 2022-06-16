@@ -192,7 +192,7 @@ class ApermoAdminBar {
 	 */
 	private function load_sites() {
 		// Check if a filter was added from within the theme.
-		if ( has_filter( 'apermo-adminbar-sites' ) ) {
+		if ( has_filter( 'apermo_adminbar_sites' ) ) {
 			$dummysites = array();
 			foreach ( $this->allowed_page_types as $key => $allowed_page_type ) {
 				$dummysites[ $key ]['name']      = $allowed_page_type['label'];
@@ -207,7 +207,7 @@ class ApermoAdminBar {
 			}
 			// Filter against a default set of sites and afterwards use the sanitize function.
 			$this->is_from_filter = true;
-			$this->sites          = $this->sanitize( apply_filters( 'apermo-adminbar-sites', $dummysites ) );
+			$this->sites          = $this->sanitize( apply_filters( 'apermo_adminbar_sites', $dummysites ) );
 		}
 		// If the sites are still empty load the settings from the DB.
 		if ( ! count( $this->sites ) ) {
@@ -452,6 +452,7 @@ class ApermoAdminBar {
 					?>
 				<div id="setting-error-settings_updated" class="error settings-error notice">
 					<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
+					<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo_adminbar_sites"</em>' ); ?></strong></p>
 				</div>
 				<fieldset disabled="disabled">
 					<?php
@@ -700,7 +701,7 @@ class ApermoAdminBar {
 	 */
 	public function import_render() {
 		?>
-		<label for="apermo_adminbar_sites_import"><?php esc_html_e( 'If you want import the setting from another site, just copy the code from the export section into this textarea. For advanced users, you can use the filter "apermo-adminbar-sites", see the readme for an example.', 'apermo-adminbar' ); ?></label>
+		<label for="apermo_adminbar_sites_import"><?php esc_html_e( 'If you want import the setting from another site, just copy the code from the export section into this textarea. For advanced users, you can use the filter "apermo_adminbar_sites", see the readme for an example.', 'apermo-adminbar' ); ?></label>
 		<p><strong style="color: #c00"><?php esc_html_e( 'Notice:', 'apermo-adminbar' ); ?></strong> <?php esc_html_e( 'If you enter a valid import in here, it will overwrite all settings above.', 'apermo-adminbar' ); ?></p>
 		<textarea name="apermo_adminbar_sites[all]" rows="10" cols="50" id="apermo_adminbar_sites_import" class="large-text code"></textarea>
 		<?php
