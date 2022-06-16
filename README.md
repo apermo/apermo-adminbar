@@ -78,7 +78,7 @@ Head over to the [GitHub Repository](https://github.com/apermo/apermo-adminbar) 
 
 
 ### 1.1.2 ###
-* changed: Keyboard shortcuts had to be changed as they colided with windows standards
+* changed: Keyboard shortcuts had to be changed as they collided with windows standards
 * Hide Watermark: Mac: CMD + CTRL + W - Win/Linux: ALT + SHIFT + W
 * Hide Adminbar: Mac: CMD + CTRL + A - Win/Linux: ALT + SHIFT + A
 * fixed: backend color scheme was overwritten if being set by a user prior to plugin activation
