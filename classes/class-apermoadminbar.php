@@ -451,7 +451,7 @@ class ApermoAdminBar {
 				if ( $this->is_from_filter ) {
 					?>
 				<div id="setting-error-settings_updated" class="error settings-error notice">
-					<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo-adminbar-sites"</em>' ); ?></strong></p>
+					<?php /* translators: %s: filter name */ ?>
 					<p><strong><?php printf( __( 'The Filter %s is active, probably within your theme. These settings have been disabled.', 'apermo-adminbar' ), '<em>"apermo_adminbar_sites"</em>' ); ?></strong></p>
 				</div>
 				<fieldset disabled="disabled">
@@ -614,6 +614,7 @@ class ApermoAdminBar {
 		echo __( 'Discourage search engines from indexing this site' ) . '<br>';
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_yes" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="yes" ' . checked( 'yes', $setting, false ) . '>' . __( 'Yes', 'apermo-adminbar' ) . '</label><br>';
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_no" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="no" ' . checked( 'no', $setting, false ) . '>' . __( 'No', 'apermo-adminbar' ) . '</label><br>';
+		/* translators: %s: read site url */
 		echo '<label><input type="radio" id="apermo_adminbar_sites_' . esc_attr( $args['key'] ) . '_robots_default" name="apermo_adminbar_sites[' . $args['key'] . '][robots]" value="default" ' . checked( 'default', $setting, false ) . '>' . sprintf( __( 'Use <a href="%s">Settings -> Read</a>', 'apermo-adminbar' ), get_site_url() . '/wp-admin/options-reading.php' ) . '</label><br>';
 		echo '<p class="description">';
 		if ( file_exists( ABSPATH . '/robots.txt' ) ) {
