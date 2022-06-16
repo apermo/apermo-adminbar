@@ -17,11 +17,17 @@
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
-    "wp-coding-standards/wpcs": "~2.3.0",
-    "phpcompatibility/phpcompatibility-wp": "^2.1.0"
+    "phpcompatibility/phpcompatibility-wp": "^2.1.0",
+    "wp-coding-standards/wpcs": "~2.3.0"
   },
   "scripts": {
     "standards:check": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
     "standards:fix": "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }
