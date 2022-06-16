@@ -268,7 +268,7 @@ class ApermoAdminBar {
 			);
 		}
 
-		$this->admin_colors = apply_filters( 'apermo-adminbar-colors', $this->admin_colors );
+		$this->admin_colors = apply_filters( 'apermo_adminbar_colors', $this->admin_colors );
 	}
 
 	/**
@@ -281,7 +281,7 @@ class ApermoAdminBar {
 
 		$scheme = $this->admin_colors[ $this->sites[ $this->current ]['color'] ]->url;
 		if ( current_user_can( 'edit_posts' ) && ( is_admin() || is_admin_bar_showing() ) ) {
-			wp_enqueue_style( 'apermo-adminbar-colors', $scheme, array() );
+			wp_enqueue_style( 'apermo_adminbar_colors', $scheme, array() );
 			wp_enqueue_style( 'apermo-adminbar', plugins_url( 'css/style.css', __FILE__ ) );
 		}
 	}
