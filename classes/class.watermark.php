@@ -17,7 +17,7 @@ class ApermoAdminBarWatermark {
 	public function init() {
 		$statusses           = get_post_statuses();
 		$statusses['future'] = __( 'Scheduled' );
-		$this->statusses     = apply_filters( 'apermo-adminbar-statusses', $statusses );
+		$this->statusses     = apply_filters_deprecated( 'apermo-adminbar-statusses', array( $statusses ), '1.2.0', 'apermo_adminbar_statuses' );
 	}
 
 	/**

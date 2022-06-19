@@ -25,7 +25,7 @@ class ApermoAdminBarMetabox {
 	public function init() {
 		$statusses           = get_post_statuses();
 		$statusses['future'] = __( 'Scheduled' );
-		$this->statusses     = apply_filters( 'apermo-adminbar-statusses', $statusses );
+		$this->statusses     = apply_filters_deprecated( 'apermo-adminbar-statusses', array( $statusses ), '1.2.0', 'apermo_adminbar_statuses' );
 	}
 
 	public function admin_bar_js() {
@@ -99,7 +99,7 @@ class ApermoAdminBarMetabox {
 		if ( ( ! is_admin() && is_singular() ) || ( is_object( $screen ) && 'post' == $screen->base ) ) {
 			$class = is_admin() ? ' has-static' : 'static has-static';
 
-			$this->statusbox_entries = apply_filters( 'apermo-adminbar-statusbox-entries', $this->statusbox_entries );
+			$this->statusbox_entries = apply_filters_deprecated( 'apermo-adminbar-statusbox-entries', array( $this->statusbox_entries ), '1.2.0', 'apermo_adminbar_statusbox_entries' );
 
 			if ( ! count( $this->statusbox_entries ) ) {
 				return;
