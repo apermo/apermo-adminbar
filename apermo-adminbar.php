@@ -91,7 +91,7 @@ class ApermoAdminBar {
 		global $wpdb;
 		$this->load_translation();
 
-		//Check if domain_mapping is active.
+		// Check if domain_mapping is active.
 		if ( $wpdb->dmtable === $wpdb->base_prefix . 'domain_mapping' ) {
 			$this->domain_mapping = true;
 		}
@@ -119,7 +119,7 @@ class ApermoAdminBar {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'color_scheme' ), 99 );
 
-		//has to be loaded as early as possible to ensure that the css does not overwrite theme css.
+		// Has to be loaded as early as possible to ensure that the css does not overwrite theme css.
 		add_action( 'admin_bar_init', array( $this, 'color_scheme' ), 1 );
 
 		add_filter( 'get_user_option_admin_color', array( $this, 'filter_admin_color' ) );
@@ -159,7 +159,7 @@ class ApermoAdminBar {
 		/**
 		 * Entry format
 		 *
-		 * 'key_for_form' => array( 'label' => 'Readable Label', 'descroption' => 'Short description', 'robots' => 'yes'|'no'|false )
+		 * 'key_for_form' => array( 'label' => 'Readable Label', 'description' => 'Short description', 'robots' => 'yes'|'no'|false )
 		 */
 		$types = array(
 			'dev'     => array(
@@ -246,6 +246,7 @@ class ApermoAdminBar {
 			$this->is_from_filter = true;
 			$this->sites          = $this->sanitize( apply_filters_deprecated( 'apermo-adminbar-sites', array( $dummysites ), '1.2.0', 'apermo_adminbar_sites' ) );
 		}
+
 		// If the sites are still empty load the settings from the DB.
 		if ( ! count( $this->sites ) ) {
 			$this->is_from_filter = false;
@@ -263,7 +264,7 @@ class ApermoAdminBar {
 			// Just give me the domain + everything that follows.
 			$urls[] = $this->no_http_s( $site['url'] );
 
-			//Multisite Domain Mapping Support.
+			// Multisite Domain Mapping Support.
 			if ( isset( $site['mapping_url'] ) ) {
 				$urls[] = $this->no_http_s( $site['mapping_url'] );
 			}
