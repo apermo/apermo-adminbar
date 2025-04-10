@@ -96,17 +96,17 @@ class ApermoAdminBar {
 			$this->domain_mapping = true;
 		}
 
-		if ( ! is_admin() && apply_filters_deprecated( 'apermo-adminbar-watermark', array( true ), '1.2.0', 'apermo_adminbar_watermark' ) ) {
+		if ( ! is_admin() && apply_filters( 'apermo-adminbar-watermark', true ) ) {
 			require_once __DIR__ . '/classes/class.watermark.php';
 			new ApermoAdminBarWatermark();
 		}
 
-		if ( apply_filters_deprecated( 'apermo-adminbar-statusbox', array( true ), '1.2.0', 'apermo_adminbar_statusbox' ) ) {
+		if ( apply_filters( 'apermo-adminbar-statusbox', true ) ) {
 			require_once __DIR__ . '/classes/class.statusbox.php';
 			new ApermoAdminBarMetabox();
 		}
 
-		if ( apply_filters_deprecated( 'apermo-adminbar-keycodes', array( true ), '1.2.0', 'apermo_adminbar_keycodes' ) ) {
+		if ( apply_filters( 'apermo-adminbar-keycodes', true ) ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'js_keycodes' ) );
 		}
 
@@ -188,7 +188,7 @@ class ApermoAdminBar {
 		remove_action( 'admin_color_scheme_picker', 'admin_color_scheme_picker' );
 
 		// Allow to add (or remove) further page types via filter.
-		$this->allowed_page_types = apply_filters_deprecated( 'apermo-adminbar-types', array( $types ), '1.2.0', 'apermo_adminbar_types' );
+		$this->allowed_page_types = apply_filters( 'apermo-adminbar-types', $types );
 		// 'all' is reserved, it is used for the serialized data, and it would possibly create side effects.
 		unset( $this->allowed_page_types['all'] );
 		$this->load_sites();
@@ -229,7 +229,7 @@ class ApermoAdminBar {
 	 */
 	private function load_sites() {
 		// Check if a filter was added from within the theme.
-		if ( has_filter( 'apermo-adminbar-sites' ) || has_filter( 'apermo_adminbar_sites' ) ) {
+		if ( has_filter( 'apermo-adminbar-sites' ) ) {
 			$dummysites = array();
 			foreach ( $this->allowed_page_types as $key => $allowed_page_type ) {
 				$dummysites[ $key ]['name']      = $allowed_page_type['label'];
@@ -244,7 +244,7 @@ class ApermoAdminBar {
 			}
 			// Filter against a default set of sites and afterwards use the sanitize function.
 			$this->is_from_filter = true;
-			$this->sites          = $this->sanitize( apply_filters_deprecated( 'apermo-adminbar-sites', array( $dummysites ), '1.2.0', 'apermo_adminbar_sites' ) );
+			$this->sites          = $this->sanitize( apply_filters( 'apermo-adminbar-sites', $dummysites ) );
 		}
 
 		// If the sites are still empty load the settings from the DB.
@@ -306,7 +306,7 @@ class ApermoAdminBar {
 			);
 		}
 
-		$this->admin_colors = apply_filters_deprecated( 'apermo-adminbar-colors', array( $this->admin_colors ), '1.2.0', 'apermo_adminbar_colors' );
+		$this->admin_colors = apply_filters( 'apermo-adminbar-colors', $this->admin_colors );
 	}
 
 	/**
@@ -389,7 +389,7 @@ class ApermoAdminBar {
 		}
 
 		// This feature is by default only for contributors or better.
-		$caps_needed = apply_filters_deprecated( 'apermo-adminbar-caps', array( 'edit_posts' ), '1.2.0', 'apermo_adminbar_caps' );
+		$caps_needed = apply_filters( 'apermo-adminbar-caps', 'edit_posts' );
 		if ( ! current_user_can( $caps_needed ) ) {
 			return;
 		}
