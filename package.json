@@ -9,7 +9,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint:js": "eslint 'js/**/*.js'",
-    "lint:js:fix": "eslint 'js/**/*.js' --fix"
+    "lint:js:fix": "eslint 'js/**/*.js' --fix",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.php": [
+      "vendor/bin/phpcs --",
+      "vendor/bin/phpstan analyse --no-progress --memory-limit=1G --"
+    ],
+    "*.js": "eslint --fix"
   },
   "repository": {
     "type": "git",
@@ -29,6 +37,8 @@
     "@commitlint/config-conventional": "^21.0.0",
     "@wordpress/eslint-plugin": "^25.1.0",
     "eslint": "^9.39.4",
-    "globals": "^17.6.0"
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.3"
   }
 }
