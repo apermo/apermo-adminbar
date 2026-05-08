@@ -8,4 +8,5 @@ node_modules/
 .phpcs.cache
 playwright-report/
 test-results/
+e2e/.auth/
 .DS_Store

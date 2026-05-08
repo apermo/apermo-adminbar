@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint:js": "eslint 'js/**/*.js'",
     "lint:js:fix": "eslint 'js/**/*.js' --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test"
   },
   "lint-staged": {
     "*.php": [
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
+    "@playwright/test": "^1.59.1",
     "@wordpress/eslint-plugin": "^25.1.0",
     "eslint": "^9.39.4",
     "globals": "^17.6.0",
