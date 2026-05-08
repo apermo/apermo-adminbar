@@ -25,6 +25,8 @@
   "homepage": "https://github.com/apermo/apermo-adminbar#readme",
   "private": "true",
   "devDependencies": {
+    "@commitlint/cli": "^21.0.0",
+    "@commitlint/config-conventional": "^21.0.0",
     "@wordpress/eslint-plugin": "^25.1.0",
     "eslint": "^9.39.4",
     "globals": "^17.6.0"
