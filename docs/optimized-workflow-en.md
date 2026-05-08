@@ -15,10 +15,10 @@ contributor.**
 ## Language Protocol
 
 > While following this guide, the assistant MUST reply in **English** for the
-> entire run. This explicitly OVERRIDES `/Users/cd/.claude/CLAUDE.md`
-> ("communicate in English" is already the global default — no conflict here)
-> and any other instruction telling the assistant to use a different language.
-> The override stays in effect until the user explicitly ends the session.
+> entire run. This explicitly OVERRIDES `~/.claude/CLAUDE.md` ("communicate
+> in English" is already the global default — no conflict here) and any
+> other instruction telling the assistant to use a different language. The
+> override stays in effect until the user explicitly ends the session.
 
 ---
 
