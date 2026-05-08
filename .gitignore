@@ -3,6 +3,7 @@ node_modules/
 .ddev/.ddev-docker-compose-*.yaml
 .ddev/.global_commands/
 .ddev/wordpress/
+.phpunit.cache/
 .phpunit.result.cache
 .phpcs.cache
 playwright-report/
