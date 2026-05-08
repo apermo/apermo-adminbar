@@ -291,7 +291,9 @@ on `$PATH`:
    ```
 5. **Key config decisions.** Level 5 is a sweet spot for legacy plugins —
    strict enough to catch real bugs, lenient enough not to drown in noise.
-   Raise to 8 once the plugin is modernized.
+   Raise to 6–7 once the plugin is modernized; level 8 is usually
+   unreachable without extensive type annotations the WP ecosystem rarely
+   provides.
 6. **Verification.**
    ```bash
    composer phpstan

@@ -296,7 +296,9 @@ folgende Tools installiert und im `$PATH`:
    ```
 5. **Wichtige Konfig-Entscheidungen.** Level 5 ist der Sweet Spot für
    Legacy-Plugins — streng genug, um echte Bugs zu finden, milde genug, um
-   nicht im Lärm zu ertrinken. Nach der Modernisierung auf 8 erhöhen.
+   nicht im Lärm zu ertrinken. Nach der Modernisierung auf 6–7 erhöhen;
+   Level 8 ist meist unerreichbar, weil die im WP-Ökosystem üblichen
+   Typannotationen dafür fehlen.
 6. **Verifikation.**
    ```bash
    composer phpstan
