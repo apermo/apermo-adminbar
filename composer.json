@@ -1,0 +1,13 @@
+{
+    "name": "apermo/apermo-adminbar",
+    "description": "Apermo AdminBar plugin development scaffold",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Christoph Daum",
+            "email": "christoph.daum@coding-pioneers.com"
+        }
+    ],
+    "require": {}
+}
