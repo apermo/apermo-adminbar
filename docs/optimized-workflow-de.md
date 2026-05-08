@@ -92,12 +92,15 @@ folgende Tools installiert und im `$PATH`:
    node_modules/
    .ddev/.ddev-docker-compose-*.yaml
    .ddev/.global_commands/
+   .ddev/wordpress/
    .phpunit.result.cache
    .phpcs.cache
    playwright-report/
    test-results/
    .DS_Store
    ```
+   `.ddev/wordpress/` ist der WP-Docroot, den `ddev orchestrate` in Schritt 01
+   befüllt — Tausende Core-Dateien, die nicht in den Repo gehören.
    `.editorconfig` anlegen:
    ```
    root = true
@@ -146,9 +149,10 @@ folgende Tools installiert und im `$PATH`:
      --project-name=apermo-adminbar \
      --php-version=8.2 \
      --webserver-type=nginx-fpm \
-     --docroot=.ddev/wordpress \
-     --create-docroot
+     --docroot=.ddev/wordpress
    ```
+   DDEV legt das Docroot-Verzeichnis seit v1.24 automatisch an; das früher
+   nötige `--create-docroot` ist deprecated und wird ignoriert.
    `.ddev/commands/web/orchestrate` erstellen (modelliert nach
    https://github.com/inpsyde/WP-Stash):
    ```bash
@@ -184,8 +188,10 @@ folgende Tools installiert und im `$PATH`:
    ```bash
    curl -sf -o /dev/null -w "%{http_code}\n" https://apermo-adminbar.ddev.site/wp-login.php
    # → 200
-   ddev exec wp plugin list --status=active --field=name | grep apermo-adminbar
+   ddev exec wp plugin list --path=.ddev/wordpress --status=active --field=name | grep apermo-adminbar
    ```
+   `ddev exec` startet im Projekt-Root (`/var/www/html`); WP liegt aber im
+   Docroot `.ddev/wordpress`, daher braucht `wp` ein explizites `--path`.
 7. **Commit.** `chore: add ddev config with orchestrate command`
 8. **Tag.** `git tag step-01-ddev`
 9. ⏸ Auf Freigabe warten.
