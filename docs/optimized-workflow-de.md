@@ -420,7 +420,7 @@ folgende Tools installiert und im `$PATH`:
        "vendor/bin/phpcs --",
        "vendor/bin/phpstan analyse --no-progress --"
      ],
-     "*.js": "npm run lint:js -- --fix"
+     "*.js": "eslint --fix"
    }
    ```
 5. **Wichtige Konfig-Entscheidungen.** `lint-staged` läuft nur auf gestageten
