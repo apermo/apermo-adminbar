@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+## Description: Provision a fresh WP install with the plugin under test
+## Usage: orchestrate
+## Example: ddev orchestrate
+set -euo pipefail
+cd /var/www/html/.ddev/wordpress
+wp core download --skip-content --force
+wp config create \
+  --dbname="${DDEV_DATABASE_NAME:-db}" \
+  --dbuser=db --dbpass=db --dbhost=db --force
+wp core install \
+  --url="https://apermo-adminbar.ddev.site" \
+  --title="Apermo AdminBar Dev" \
+  --admin_user=admin --admin_password=admin \
+  --admin_email=admin@example.tld --skip-email
+mkdir -p wp-content/plugins
+ln -snf /var/www/html wp-content/plugins/apermo-adminbar
+wp plugin activate apermo-adminbar
