@@ -541,14 +541,15 @@ on `$PATH`:
    ```
    Create `e2e/global-setup.ts`:
    ```ts
-   import { chromium, request } from '@playwright/test';
+   import { chromium, type FullConfig } from '@playwright/test';
    import { mkdirSync } from 'node:fs';
-   export default async () => {
+   export default async (config: FullConfig) => {
+     const { baseURL } = config.projects[0].use;
      mkdirSync('e2e/.auth', { recursive: true });
      const browser = await chromium.launch();
-     const ctx = await browser.newContext({ ignoreHTTPSErrors: true });
+     const ctx = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
      const page = await ctx.newPage();
-     await page.goto('https://apermo-adminbar.ddev.site/wp-login.php');
+     await page.goto('/wp-login.php');
      await page.fill('#user_login', 'admin');
      await page.fill('#user_pass', 'admin');
      await page.click('#wp-submit');
