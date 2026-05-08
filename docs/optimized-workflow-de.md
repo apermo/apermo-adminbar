@@ -139,7 +139,6 @@ folgende Tools installiert und im `$PATH`:
 3. **Berührte Dateien.**
    - `.ddev/config.yaml` (neu)
    - `.ddev/commands/web/orchestrate` (neu, ausführbares Shell-Skript)
-   - `tools/orchestrate.sh` (optionaler Helper, vom DDEV-Befehl aufgerufen)
 4. **Befehle.**
    ```bash
    ddev config \

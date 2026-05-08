@@ -138,7 +138,6 @@ on `$PATH`:
 3. **Files touched.**
    - `.ddev/config.yaml` (new)
    - `.ddev/commands/web/orchestrate` (new, executable shell script)
-   - `tools/orchestrate.sh` (optional helper, called by the DDEV command)
 4. **Commands.**
    ```bash
    ddev config \
