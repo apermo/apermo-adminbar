@@ -705,3 +705,114 @@ ESLint catches JS regressions; commitlint catches commit-message drift; the
 unit + e2e suites catch behavioral regressions; and CI re-runs them all on
 every PR. AI can write the code; the pipeline catches the mistakes — and the
 loop is fast enough to demo on stage.
+
+---
+
+## Appendix — Handling Legacy Errors
+
+The plugin's existing PHP and JS will fail PHPCS, PHPStan, and ESLint the
+moment those tools are installed. Because lint-staged runs the linters against
+**whole files** that have any staged change (not against the diff), this means:
+the moment you edit `apermo-adminbar.php` for any reason, every pre-existing
+error in that file is reported and the commit is blocked — even if your change
+itself is clean.
+
+This guide picks the **"staged-file linting" approach** as its default and
+intentional behavior: touch a file, you own all its lint errors. That forces
+incremental refactoring of files as they evolve and prevents new code from
+hiding behind the legacy mess. It's the right call for a long-lived codebase
+where you control the pace.
+
+If that trade-off doesn't fit your project, here are four alternatives. Pick
+one before wiring up Step 06.
+
+### Option A — Staged-file linting (this guide's default)
+
+- **What:** lint-staged passes whole staged files to PHPCS / PHPStan / ESLint.
+  Editing a legacy file means cleaning it up before the commit lands.
+- **Pro:** strongest forcing function for incremental modernization. No hidden
+  errors, no "well it was already broken" excuses.
+- **Con:** small fixes to legacy files become big PRs. Initial onboarding pain
+  while the team gets used to it.
+- **Setup:** exactly what Step 06 does. Nothing extra needed.
+
+### Option B — Baseline files
+
+- **What:** snapshot all *current* errors into a baseline; the linter only
+  fails on errors introduced *after* the baseline.
+  - PHPStan: `vendor/bin/phpstan analyse --generate-baseline` →
+    `phpstan-baseline.neon` (committed). Include it via
+    `includes: [phpstan-baseline.neon]` in `phpstan.neon.dist`.
+  - PHPCS: no native baseline. Workarounds:
+    - Use [`phpcs-changed`](https://github.com/sirbrillig/phpcs-changed) which
+      runs PHPCS but reports only on changed lines (effectively a per-PR
+      baseline).
+    - Or add explicit `<exclude-pattern>` blocks for the worst legacy files in
+      `phpcs.xml.dist` and clear them over time.
+  - ESLint: use [`@eslint/eslintrc` + `lint-baseline`](https://www.npmjs.com/package/eslint-baseline),
+    or commit an `.eslintignore` listing the worst files and shrink it over time.
+- **Pro:** clean line in the sand — every new commit must be clean; legacy is
+  grandfathered. You can ship features today.
+- **Con:** baselines hide problems. Without an explicit "shrink the baseline"
+  habit, the legacy debt stays forever. Add a CI check that the baseline isn't
+  growing.
+
+### Option C — Diff-only linting
+
+- **What:** linters look at *only the changed lines*, not whole files.
+  - PHP: [`phpcs-changed`](https://github.com/sirbrillig/phpcs-changed) +
+    PHPStan's [`--xdebug` + custom filter](https://phpstan.org/user-guide/baseline)
+    or [`staticanalysis/phpstan-shim`](https://github.com/staticanalysis).
+  - JS: [`lint-staged`](https://github.com/lint-staged/lint-staged) +
+    `eslint --rulesdir` against the diff via tools like
+    [`lint-diff`](https://github.com/grvcoelho/lint-diff).
+- **Pro:** maximally honest — the linter never complains about lines you
+  didn't touch. Best UX for contributors.
+- **Con:** more moving parts in the pre-commit pipeline. Some rule classes
+  ("class-level missing docblock", "file-level encoding") can't be localized
+  to a line and slip through. Tooling support varies in maturity.
+
+### Option D — Count-based gating
+
+- **What:** cache the current error count; let commits through as long as the
+  new count is ≤ the old count.
+- **Pro:** dirt-simple to script.
+- **Con:** brittle (errors trade off against each other in confusing ways) and
+  unhelpful (it doesn't tell the developer *what* they broke). Generally not
+  recommended; listed for completeness.
+
+### Recommendation by project type
+
+- **Established codebase, small team, long horizon (this plugin):** Option A.
+  Pay the refactor cost as you go.
+- **Large legacy codebase, multiple teams, need to ship features now:** Option B.
+  Baseline aggressively, then add a "baseline must shrink each quarter" rule.
+- **Open-source project with many drive-by contributors:** Option C. Don't
+  make first-time contributors fix unrelated legacy.
+- **Don't pick D.**
+
+### How to switch this guide to Option B (quick recipe)
+
+If you want the baseline approach instead, modify Step 06 as follows:
+
+1. Before generating Husky hooks, run:
+   ```bash
+   vendor/bin/phpstan analyse --generate-baseline
+   git add phpstan-baseline.neon
+   ```
+   and include it from `phpstan.neon.dist`:
+   ```neon
+   includes:
+     - vendor/szepeviktor/phpstan-wordpress/extension.neon
+     - phpstan-baseline.neon
+   ```
+2. Add a `phpcs-changed` dependency and use it from lint-staged instead of
+   `phpcs`:
+   ```json
+   "lint-staged": {
+     "*.php": "phpcs-changed --git --git-base=origin/main",
+     "*.js": "npm run lint:js -- --fix"
+   }
+   ```
+3. Commit baseline + config: `chore: baseline existing lint errors`. Tag it
+   `step-06b-baseline` if you want a separate waypoint.

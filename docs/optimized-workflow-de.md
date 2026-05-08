@@ -722,3 +722,118 @@ Commit-Message-Drift; die Unit- und E2E-Suiten fangen Verhaltensregressionen;
 und CI fährt sie alle auf jedem PR erneut. Die KI darf den Code schreiben — die
 Pipeline fängt die Fehler. Und die Schleife ist schnell genug, um sie auf
 einer Bühne live zu zeigen.
+
+---
+
+## Anhang — Umgang mit Legacy-Fehlern
+
+Das bestehende PHP und JS des Plugins fällt in dem Moment durch PHPCS, PHPStan
+und ESLint, in dem die Tools installiert werden. Weil lint-staged die Linter
+gegen **ganze Dateien** mit gestageten Änderungen laufen lässt (nicht gegen das
+Diff), bedeutet das: Sobald du `apermo-adminbar.php` aus irgendeinem Grund
+editierst, werden **alle** vorhandenen Fehler dieser Datei gemeldet und der
+Commit wird blockiert — selbst wenn deine eigene Änderung sauber ist.
+
+Diese Anleitung wählt den **"Staged-File-Linting"-Ansatz** als bewusstes
+Standardverhalten: Wer eine Datei anfasst, übernimmt alle Lint-Fehler dieser
+Datei. Das erzwingt schrittweises Refactoring von Dateien, sobald sie
+weiterentwickelt werden, und verhindert, dass sich neuer Code hinter dem
+Legacy-Chaos versteckt. Für einen langlebigen Codebase, in dem du das Tempo
+selbst bestimmst, ist das die richtige Entscheidung.
+
+Falls dieser Trade-off nicht zu deinem Projekt passt, hier vier Alternativen.
+Wähle eine, bevor du Schritt 06 verdrahtest.
+
+### Option A — Staged-File-Linting (Default dieser Anleitung)
+
+- **Was:** lint-staged übergibt ganze gestagete Dateien an PHPCS / PHPStan /
+  ESLint. Eine Legacy-Datei zu editieren bedeutet, sie vor dem Commit
+  aufzuräumen.
+- **Pro:** Stärkste Zwangsfunktion für inkrementelle Modernisierung. Keine
+  versteckten Fehler, keine "war ja schon kaputt"-Ausreden.
+- **Con:** Kleine Fixes an Legacy-Dateien werden zu großen PRs. Am Anfang
+  Onboarding-Schmerz, bis sich das Team daran gewöhnt.
+- **Setup:** Genau was Schritt 06 tut. Nichts Zusätzliches.
+
+### Option B — Baseline-Dateien
+
+- **Was:** Schnappschuss aller *aktuellen* Fehler in eine Baseline; der Linter
+  schlägt nur an, wenn nach dem Snapshot neue Fehler entstehen.
+  - PHPStan: `vendor/bin/phpstan analyse --generate-baseline` →
+    `phpstan-baseline.neon` (committen). Einbinden via
+    `includes: [phpstan-baseline.neon]` in `phpstan.neon.dist`.
+  - PHPCS: keine native Baseline. Workarounds:
+    - [`phpcs-changed`](https://github.com/sirbrillig/phpcs-changed) nutzen,
+      das PHPCS ausführt, aber nur auf geänderten Zeilen meldet (faktisch eine
+      Pro-PR-Baseline).
+    - Oder explizite `<exclude-pattern>`-Blöcke für die schlimmsten
+      Legacy-Dateien in `phpcs.xml.dist` setzen und sie nach und nach räumen.
+  - ESLint: [`@eslint/eslintrc` + `lint-baseline`](https://www.npmjs.com/package/eslint-baseline)
+    nutzen, oder eine `.eslintignore` mit den schlimmsten Dateien committen
+    und sie schrittweise verkleinern.
+- **Pro:** Saubere Trennlinie — jeder neue Commit muss sauber sein, Legacy ist
+  bestandsgeschützt. Du kannst heute Features liefern.
+- **Con:** Baselines verstecken Probleme. Ohne eine explizite
+  "Baseline-schrumpfen"-Disziplin bleibt die Legacy-Schuld für immer. Ein
+  CI-Check sollte erzwingen, dass die Baseline nicht wächst.
+
+### Option C — Diff-Only-Linting
+
+- **Was:** Linter prüfen *nur die geänderten Zeilen*, nicht ganze Dateien.
+  - PHP: [`phpcs-changed`](https://github.com/sirbrillig/phpcs-changed) +
+    PHPStans [`--xdebug` + Custom-Filter](https://phpstan.org/user-guide/baseline)
+    oder [`staticanalysis/phpstan-shim`](https://github.com/staticanalysis).
+  - JS: [`lint-staged`](https://github.com/lint-staged/lint-staged) +
+    `eslint --rulesdir` gegen das Diff via Tools wie
+    [`lint-diff`](https://github.com/grvcoelho/lint-diff).
+- **Pro:** Maximal ehrlich — der Linter beschwert sich nie über Zeilen, die
+  du nicht angefasst hast. Beste UX für Mitwirkende.
+- **Con:** Mehr bewegliche Teile in der Pre-Commit-Pipeline. Manche
+  Regelklassen ("Klassen-Docblock fehlt", "Datei-Encoding") lassen sich nicht
+  einer einzelnen Zeile zuordnen und rutschen durch. Tool-Reife schwankt.
+
+### Option D — Zählerbasiertes Gating
+
+- **Was:** Aktuelle Fehleranzahl cachen; Commits durchlassen, solange die neue
+  Zahl ≤ der alten ist.
+- **Pro:** Trivial zu skripten.
+- **Con:** Brüchig (Fehler verrechnen sich auf verwirrende Weise) und
+  unbrauchbar (sagt dem Entwickler nicht, *was* er kaputt gemacht hat). Im
+  Allgemeinen nicht empfohlen; nur der Vollständigkeit halber gelistet.
+
+### Empfehlung nach Projekttyp
+
+- **Etablierter Codebase, kleines Team, langer Horizont (dieses Plugin):**
+  Option A. Refactor-Kosten beim Anfassen mitnehmen.
+- **Große Legacy-Codebase, mehrere Teams, jetzt Features liefern:** Option B.
+  Aggressiv baselinen, dann eine "Baseline muss pro Quartal schrumpfen"-Regel
+  hinzufügen.
+- **Open-Source-Projekt mit vielen Drive-by-Beiträgen:** Option C. Erstbeiträger
+  nicht zwingen, fremde Legacy aufzuräumen.
+- **Option D nicht wählen.**
+
+### Wechsel auf Option B (Schnellrezept)
+
+Wenn du stattdessen den Baseline-Ansatz willst, ändere Schritt 06 wie folgt:
+
+1. Vor dem Erzeugen der Husky-Hooks ausführen:
+   ```bash
+   vendor/bin/phpstan analyse --generate-baseline
+   git add phpstan-baseline.neon
+   ```
+   und in `phpstan.neon.dist` einbinden:
+   ```neon
+   includes:
+     - vendor/szepeviktor/phpstan-wordpress/extension.neon
+     - phpstan-baseline.neon
+   ```
+2. `phpcs-changed` als Abhängigkeit ergänzen und in lint-staged statt `phpcs`
+   verwenden:
+   ```json
+   "lint-staged": {
+     "*.php": "phpcs-changed --git --git-base=origin/main",
+     "*.js": "npm run lint:js -- --fix"
+   }
+   ```
+3. Baseline + Config committen: `chore: baseline existing lint errors`. Mit
+   Tag `step-06b-baseline` versehen, wenn du einen separaten Wegpunkt willst.
